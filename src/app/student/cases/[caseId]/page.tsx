@@ -1,2 +1,2 @@
-import { AppNav } from "@/components/app-nav"; import { CaseWorkspace } from "@/components/case-workspace";
-export default function CasePage(){return <><AppNav role="student"/><CaseWorkspace/></>}
+import { AppNav } from "@/components/app-nav"; import { CaseWorkspace } from "@/components/case-workspace"; import { requireCaseFlowRole } from "@/lib/insforge/server";
+export default async function CasePage(){await requireCaseFlowRole("student");return <><AppNav role="student"/><CaseWorkspace/></>}

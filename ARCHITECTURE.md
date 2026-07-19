@@ -9,7 +9,7 @@ sequenceDiagram
   participant Student
   participant Next as Next.js
   participant AI as GPT-5.6 Responses API
-  participant DB as Supabase
+  participant DB as InsForge
   Student->>Next: Commit diagnostic and sources
   Next->>AI: Stage prompt and S-number context
   AI-->>Next: Zod-validated challenge or brief
@@ -21,7 +21,9 @@ sequenceDiagram
 
 ## Data and authorization
 
-`supabase/schema.sql` models profiles, courses, enrollments, cases, sources, assignments, objectives, attempts, responses, conversations, decisions, briefs, reflections, and insights. Student rows are owner-scoped; course faculty access aggregate insight. Storage paths belong on `case_sources`, with MIME, size, and malware checks required before extraction.
+`migrations/20260719113221_caseflow-persistence-v1.sql` models profiles, courses, enrollments, cases, sources, assignments, objectives, attempts, responses, conversations, decisions, briefs, reflections, and insights on InsForge Postgres. SSR auth keeps refresh credentials httpOnly. Student writes use narrow authenticated RPCs, all private rows carry a direct `student_id`, and RLS provides owner isolation. Faculty cohort access is course-role gated and synthetic representative responses are disconnected from auth identities. Storage URLs and keys belong together on `case_sources`, with MIME, size, and malware checks required before future extraction.
+
+The app retains a strict mode boundary: `NEXT_PUBLIC_PERSISTENCE_ENABLED=false` preserves the credential-free demo; `true` requires authentication and treats InsForge as the source of truth while keeping browser storage only as a recovery cache.
 
 ## AI contracts and failures
 

@@ -2,7 +2,7 @@
 
 ## Next: pilot readiness
 
-- Supabase authentication/persistence and fully audited RLS
+- Expand InsForge authentication with institution-managed invitations, MFA, and a recurring RLS audit
 - Secure PDF/DOCX ingestion with type, size, malware, and citation checks
 - Faculty rubric editor and explicit feedback-release workflow
 - Cohort aggregation with minimum anonymity thresholds

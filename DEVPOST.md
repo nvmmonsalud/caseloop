@@ -12,7 +12,7 @@ CaseFlow guides a student from an initial recommendation through Socratic pressu
 
 ## How it was built
 
-Next.js 16, React 19, TypeScript, Tailwind CSS, Zod, the official OpenAI SDK and Responses API, plus a Supabase PostgreSQL/Auth/Storage schema and Vercel-ready deployment. A deterministic synthetic demo preserves the complete journey without credentials.
+Next.js 16, React 19, TypeScript, Tailwind CSS, Zod, the official OpenAI SDK and Responses API, plus InsForge PostgreSQL and SSR authentication with owner-scoped RLS. A deterministic synthetic demo preserves the complete journey without credentials.
 
 ## How Codex was used
 
@@ -40,7 +40,7 @@ AI is most useful in education when it changes the learning activity. It should 
 
 ## What comes next
 
-Live persistence and auth, secure ingestion, faculty-controlled rubrics and releases, LMS integration, institutional controls, and longitudinal reasoning development.
+Secure case-material ingestion, faculty-controlled rubrics and releases, LMS integration, institutional controls, and longitudinal reasoning development on top of the new live InsForge persistence layer.
 
 ## Education-category positioning
 

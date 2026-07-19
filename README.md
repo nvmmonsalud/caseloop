@@ -30,7 +30,7 @@ flowchart LR
   UI[Next.js App Router UI] --> API[Server-only AI routes]
   API --> R[OpenAI Responses API\nGPT-5.6 and Zod]
   API --> D[Demo fallback]
-  UI --> S[(Supabase\nAuth, Postgres, Storage)]
+  UI --> S[(InsForge\nAuth and Postgres)]
   S --> A[Anonymized cohort aggregation]
   A --> API
   R --> UI
@@ -55,9 +55,10 @@ Open `http://localhost:3000/demo`. Demo mode needs no external account. Choose *
 | `DEMO_MODE` | No | `true` uses reliable structured fallbacks |
 | `OPENAI_API_KEY` | Live AI only | Server-side OpenAI key |
 | `OPENAI_MODEL` | No | Defaults to `gpt-5.6` |
-| `NEXT_PUBLIC_SUPABASE_URL` | Persistence only | Supabase URL |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Persistence only | Browser-safe anon key |
-| `SUPABASE_SERVICE_ROLE_KEY` | Server jobs only | Never expose to browser |
+| `NEXT_PUBLIC_PERSISTENCE_ENABLED` | No | `true` enables InsForge accounts and durable student work |
+| `NEXT_PUBLIC_INSFORGE_URL` | Persistence only | InsForge project URL |
+| `NEXT_PUBLIC_INSFORGE_ANON_KEY` | Persistence only | Browser-safe InsForge anon key |
+| `NEXT_PUBLIC_APP_URL` | Persistence only | Public origin used for auth redirects |
 
 ## Testing
 
@@ -72,14 +73,14 @@ Tests cover exact cohort aggregation and structured AI fallback validation.
 
 ## Database
 
-Run `supabase/schema.sql`, then `supabase/seed.sql`. The schema contains the requested entities, timestamps, indexes, RLS foundations, and student/faculty policies. The demo reads `src/lib/data.ts` so judging never depends on credentials.
+The versioned SQL in `migrations/` is applied with `npx @insforge/cli db migrations up --all`. It creates the requested entities, timestamp triggers, owner-scoped student records, role-aware RLS, guarded persistence RPCs, and 12 anonymous fictional cohort responses. New accounts are students by default; a project administrator promotes faculty through the InsForge CLI or dashboard. The zero-credential demo continues to read `src/lib/data.ts`.
 
 ## Deploy to Vercel
 
 1. Import this repository; use the Next.js preset and repository root.
 2. Set `DEMO_MODE=true` for credential-free judging.
 3. For live AI, set `DEMO_MODE=false`, `OPENAI_API_KEY`, and `OPENAI_MODEL=gpt-5.6`.
-4. Add Supabase variables after applying schema and RLS.
+4. To enable durable accounts, add the InsForge variables above and set `NEXT_PUBLIC_PERSISTENCE_ENABLED=true`.
 5. Verify `/demo`, both dashboards, the Hikari workspace, brief, cohort insight, and discussion plan.
 
 ## Privacy and academic integrity
@@ -96,8 +97,8 @@ Codex was the implementation partner across repository setup, product/data desig
 
 ## Known limitations
 
-- Demo progress is browser-local; Supabase persistence is a documented production seam.
-- Authentication UI and live file parsing are not wired into this hackathon build.
+- Demo-mode progress remains browser-local by design; live persistence uses InsForge.
+- Faculty promotion is an administrator operation; self-service course administration and live file parsing are not included.
 - Demo coaching is deterministic; live mode uses the API.
 - RLS is foundational, not a completed production security audit.
 - Analytics represent 12 completed synthetic responses in a fictional 24-student cohort.
