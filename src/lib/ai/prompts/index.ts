@@ -1,0 +1,2 @@
+import { socraticPrompt } from "./socratic"; import { preparationBriefPrompt } from "./preparation-brief"; import { cohortAnalysisPrompt } from "./cohort-analysis"; import { discussionPlanPrompt } from "./discussion-plan"; import { reflectionPrompt } from "./reflection";
+export const prompts={coach:socraticPrompt,brief:preparationBriefPrompt,cohort:cohortAnalysisPrompt,plan:discussionPlanPrompt,reflection:reflectionPrompt};

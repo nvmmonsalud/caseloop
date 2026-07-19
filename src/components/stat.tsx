@@ -1,0 +1,1 @@
+export function Stat({value,label,detail}:{value:string|number;label:string;detail?:string}) { return <div className="border-l rule pl-5"><div className="serif text-3xl font-semibold tracking-tight">{value}</div><div className="mt-1 text-sm font-bold">{label}</div>{detail&&<div className="mt-1 text-xs text-[#6d767d]">{detail}</div>}</div> }

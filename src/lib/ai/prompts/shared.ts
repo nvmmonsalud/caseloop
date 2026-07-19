@@ -1,0 +1,1 @@
+export const groundingRules=`Use only the supplied fictional case sources and user material. Label source-supported claims with [S#]. Explicitly distinguish student assumptions from AI inference. Never present a single model answer or perform high-stakes grading. Be concise and educational.`;

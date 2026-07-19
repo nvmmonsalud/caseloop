@@ -1,0 +1,2 @@
+import { describe,expect,it } from "vitest"; import { coachSchema,briefSchema } from "./schemas"; import { fallbacks } from "./fallbacks";
+describe("AI structured outputs",()=>{it("validates the coach fallback",()=>expect(coachSchema.safeParse(fallbacks.coach).success).toBe(true));it("validates the preparation brief fallback",()=>expect(briefSchema.safeParse(fallbacks.brief).success).toBe(true));it("rejects out-of-range confidence",()=>expect(briefSchema.safeParse({...fallbacks.brief,confidence:120}).success).toBe(false))});

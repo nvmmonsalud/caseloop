@@ -1,0 +1,8 @@
+import { demoBrief } from "@/lib/data";
+export const fallbacks={
+ coach:{question:"What must be true for outlet access to become effective distribution?",challenge:"The partner's 18,000-outlet access [S5] does not establish service levels or sell-through.",sourceIds:["S5"],inference:"AI inference: governance design may matter more than the headline outlet count."},
+ brief:{recommendation:demoBrief.recommendation,evidence:demoBrief.evidence.map((claim,i)=>({claim,sourceId:["S2","S5","S3"][i]})),assumptions:demoBrief.assumptions,tradeoffs:demoBrief.tradeoffs,counterargument:demoBrief.counterargument,openQuestion:demoBrief.question,confidence:demoBrief.confidence},
+ cohort:{misconceptions:[{title:"Outlet access equals coverage",evidence:"Three responses overgeneralize [S5].",count:3}],overlookedSourceIds:["S4"],discussionTensions:["Speed versus integration capacity","Control versus staged commitment"]},
+ plan:{openingQuestion:"Which fact carries your decision?",segments:[{minutes:8,title:"Opening commitment",prompt:"Choose a path and name its decisive fact."},{minutes:20,title:"Stress-test speed",prompt:"Define the cost of delay."},{minutes:32,title:"Compare execution",prompt:"Test governance and integration."}],boardPlan:["Decision criteria","Three entry modes","Decision gates"],closingSynthesis:"Entry is a sequence of commitments, not only a mode."},
+ reflection:{positionShift:"The position remained stable.",reasoningShift:"The rationale became more conditional on governance quality.",weakenedAssumption:"Outlet access translates directly into effective reach.",newEvidence:"Operating capacity [S4] gained importance."}
+};
