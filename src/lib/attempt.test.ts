@@ -1,0 +1,3 @@
+import { describe,expect,it } from "vitest"; import { attemptSchema,readStoredAttempt } from "./attempt";
+const valid={recommendation:"Use a JV",evidence:"Capital need [S2]",uncertainty:"Governance",position:"Joint venture",rationale:"Staged commitment",risk:"Control",mitigation:"Reserved matters",confidence:74,coachResponse:"Access must convert to sell-through [S5]."};
+describe("attempt persistence",()=>{it("round-trips a complete student attempt",()=>expect(readStoredAttempt(JSON.stringify(valid))).toEqual(valid));it("rejects corrupt or partial browser state",()=>{expect(readStoredAttempt("not-json")).toBeNull();expect(attemptSchema.safeParse({position:"Acquisition"}).success).toBe(false)})});

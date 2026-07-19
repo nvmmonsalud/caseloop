@@ -33,6 +33,14 @@ create policy "assignment members read" on public.assignments for select using(e
 create policy "attempt owner read write" on public.student_attempts for all using(student_id=auth.uid()) with check(student_id=auth.uid());
 create policy "response owner read write" on public.student_responses for all using(exists(select 1 from student_attempts a where a.id=attempt_id and a.student_id=auth.uid())) with check(exists(select 1 from student_attempts a where a.id=attempt_id and a.student_id=auth.uid()));
 create policy "faculty insight course faculty" on public.faculty_insights for select using(exists(select 1 from assignments a where a.id=assignment_id and is_course_faculty(a.course_id)));
--- Production hardening: add equivalent owner/faculty policies for checkpoints, briefs,
--- reflections and conversations; expose cohort aggregation through a security-definer RPC
--- that returns only k-anonymous groups (never raw peer responses).
+create policy "cases enrolled read" on public.cases for select using(exists(select 1 from assignments a join enrollments e on e.course_id=a.course_id where a.case_id=id and e.user_id=auth.uid()));
+create policy "sources enrolled read" on public.case_sources for select using(exists(select 1 from assignments a join enrollments e on e.course_id=a.course_id where a.case_id=case_sources.case_id and e.user_id=auth.uid()));
+create policy "objectives enrolled read" on public.learning_objectives for select using(exists(select 1 from assignments a join enrollments e on e.course_id=a.course_id where a.id=learning_objectives.assignment_id and e.user_id=auth.uid()));
+create policy "conversation owner" on public.ai_conversations for all using(exists(select 1 from student_attempts a where a.id=attempt_id and a.student_id=auth.uid())) with check(exists(select 1 from student_attempts a where a.id=attempt_id and a.student_id=auth.uid()));
+create policy "checkpoint owner" on public.decision_checkpoints for all using(exists(select 1 from student_attempts a where a.id=attempt_id and a.student_id=auth.uid())) with check(exists(select 1 from student_attempts a where a.id=attempt_id and a.student_id=auth.uid()));
+create policy "brief owner" on public.preparation_briefs for all using(exists(select 1 from student_attempts a where a.id=attempt_id and a.student_id=auth.uid())) with check(exists(select 1 from student_attempts a where a.id=attempt_id and a.student_id=auth.uid()));
+create policy "reflection owner" on public.reflections for all using(exists(select 1 from student_attempts a where a.id=attempt_id and a.student_id=auth.uid())) with check(exists(select 1 from student_attempts a where a.id=attempt_id and a.student_id=auth.uid()));
+create policy "faculty attempts read" on public.student_attempts for select using(exists(select 1 from assignments a where a.id=assignment_id and is_course_faculty(a.course_id)));
+create policy "faculty responses read" on public.student_responses for select using(exists(select 1 from student_attempts sa join assignments a on a.id=sa.assignment_id where sa.id=attempt_id and is_course_faculty(a.course_id)));
+-- Production aggregation should move behind a security-definer RPC that returns only
+-- k-anonymous groups; faculty access to raw responses exists for controlled pilot review.

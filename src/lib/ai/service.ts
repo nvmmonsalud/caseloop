@@ -1,6 +1,6 @@
-import OpenAI from "openai"; import { zodTextFormat } from "openai/helpers/zod"; import { prompts } from "./prompts"; import { schemas,type AIFeature } from "./schemas"; import { fallbacks } from "./fallbacks";
+import OpenAI from "openai"; import { zodTextFormat } from "openai/helpers/zod"; import { prompts } from "./prompts"; import { schemas,type AIFeature } from "./schemas"; import { getDemoFallback } from "./fallbacks";
 export async function runAI(feature:AIFeature,input:unknown){
- if(!process.env.OPENAI_API_KEY||process.env.DEMO_MODE==="true")return {data:fallbacks[feature],mode:"demo" as const};
+ if(!process.env.OPENAI_API_KEY||process.env.DEMO_MODE==="true")return {data:getDemoFallback(feature,input),mode:"demo" as const};
  const client=new OpenAI({apiKey:process.env.OPENAI_API_KEY,timeout:20_000,maxRetries:1});
  try{
   const response=await client.responses.parse({model:process.env.OPENAI_MODEL||"gpt-5.6",input:[{role:"system",content:prompts[feature]},{role:"user",content:JSON.stringify(input)}],text:{format:zodTextFormat(schemas[feature],`caseflow_${feature}`)}});

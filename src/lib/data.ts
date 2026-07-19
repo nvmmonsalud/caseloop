@@ -1,4 +1,5 @@
-export type Position = "Acquisition" | "Joint venture" | "Organic entry";
+export const POSITION_OPTIONS=["Acquisition","Joint venture","Organic entry"] as const;
+export type Position = typeof POSITION_OPTIONS[number];
 export type StudentResponse = { id:string; position:Position; confidence:number; evidence:string[]; assumption:string; rationale:string; support:"strong"|"mixed"|"weak" };
 
 export const CASE_ID = "hikari-philippines";
@@ -36,10 +37,11 @@ export const studentResponses:StudentResponse[] = [
  {id:"A11",position:"Organic entry",confidence:64,evidence:["S3"],assumption:"Consumers will pay a Japanese quality premium.",rationale:"Own-market learning creates durable advantage.",support:"weak"},
  {id:"A12",position:"Joint venture",confidence:80,evidence:["S2","S5"],assumption:"A buyout option can be negotiated.",rationale:"Learn first, deepen ownership later.",support:"strong"},
 ];
+export const cohortRoster={enrolledIds:Array.from({length:24},(_,i)=>`A${String(i+1).padStart(2,"0")}`),startedIds:Array.from({length:18},(_,i)=>`A${String(i+1).padStart(2,"0")}`),completedIds:studentResponses.map(r=>r.id)};
 
 export const demoBrief = {
  recommendation:"Form a joint venture with Manila Harvest, with staged capital and a two-year call option.",
- evidence:["The JV needs ¥1.7B versus ¥4.8B for acquisition [S2].","Manila Harvest reaches 18,000 outlets and has regulatory expertise [S5].","Localization matters to consumer trial [S3]."],
+ evidence:[{claim:"The JV needs ¥1.7B versus ¥4.8B for acquisition [S2].",sourceId:"S2"},{claim:"Manila Harvest reaches 18,000 outlets and has regulatory expertise [S5].",sourceId:"S5"},{claim:"Localization matters to consumer trial [S3].",sourceId:"S3"}],
  assumptions:["Outlet access converts into quality distribution.","Governance rights can close reporting-control gaps."],
  tradeoffs:"Hikari gives up some control in exchange for speed, local knowledge, and lower irreversible capital.",
  counterargument:"Acquisition creates immediate control and may be the only route fast enough to capture category growth.",
