@@ -6,5 +6,6 @@ export function cohortMetrics(responses=studentResponses) {
   const weakHighConfidence=responses.filter(r=>r.confidence>=80&&r.support==="weak").length;
   const evidenceCounts=responses.flatMap(r=>r.evidence).reduce<Record<string,number>>((a,id)=>{a[id]=(a[id]||0)+1;return a},{});
   const accessAssumptionCount=responses.filter(r=>/access|outlet|distribution/i.test(r.assumption)).length;
-  return {total:responses.length,started:cohortRoster.startedIds.length,completed:responses.length,enrolled:cohortRoster.enrolledIds.length,positions,averageConfidence,weakHighConfidence,evidenceCounts,accessAssumptionCount,overlookedOperatingRisk:responses.length-(evidenceCounts.S4||0)};
+  const localizationAssumptionCount=responses.filter(r=>/local|flavor|brand|premium/i.test(`${r.assumption} ${r.rationale}`)).length;
+  return {total:responses.length,started:cohortRoster.startedIds.length,completed:responses.length,enrolled:cohortRoster.enrolledIds.length,positions,averageConfidence,weakHighConfidence,evidenceCounts,accessAssumptionCount,localizationAssumptionCount,overlookedOperatingRisk:responses.length-(evidenceCounts.S4||0)};
 }
