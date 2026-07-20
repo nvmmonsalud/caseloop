@@ -8,11 +8,11 @@ export const rubricCriterionSchema = z.object({
 
 export const pilotSettingsSchema = z.object({
   rubric: z.array(rubricCriterionSchema).max(8),
-  rubricReleasedAt: z.iso.datetime().nullable().optional(),
+  rubricReleasedAt: z.iso.datetime({ offset: true }).nullable().optional(),
   feedback: z.object({
     title: z.string().trim().min(2).max(120),
     body: z.string().trim().min(1).max(4_000),
-    releasedAt: z.iso.datetime().nullable().optional(),
+    releasedAt: z.iso.datetime({ offset: true }).nullable().optional(),
   }).strict().nullable().optional(),
 }).strict().superRefine((settings, context) => {
   if (settings.rubric.length > 0 && settings.rubric.reduce((sum, criterion) => sum + criterion.weight, 0) !== 100) {

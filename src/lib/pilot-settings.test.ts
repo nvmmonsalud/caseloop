@@ -15,6 +15,20 @@ describe("faculty-controlled rubric and feedback release", () => {
     expect(result.rubric.reduce((sum, criterion) => sum + criterion.weight, 0)).toBe(100);
   });
 
+  it("accepts Postgres timestamps with an explicit UTC offset", () => {
+    const result = parsePilotSettings({
+      rubric: [{ title: "Evidence use", description: "Ground claims in case sources.", weight: 100 }],
+      rubricReleasedAt: "2026-07-20T09:00:00+00:00",
+      feedback: {
+        title: "Class synthesis",
+        body: "Revisit the control assumptions.",
+        releasedAt: "2026-07-20T09:00:00+00:00",
+      },
+    });
+
+    expect(result.feedback?.releasedAt).toBe("2026-07-20T09:00:00+00:00");
+  });
+
   it("fails closed on overweight, unknown, or unreleased feedback fields", () => {
     expect(() => parsePilotSettings({ rubric: [{ title: "Only", description: "x", weight: 90 }], secret: true })).toThrow();
     expect(() =>
