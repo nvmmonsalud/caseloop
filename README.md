@@ -92,6 +92,8 @@ Faculty can edit a bounded reasoning rubric, keep it as a faculty-only draft, an
 
 PDF and DOCX ingestion is available only to authenticated faculty when persistence is enabled. The server enforces a 4 MB limit, extension/MIME/magic-byte agreement, SHA-256 hashing, plain-text extraction, macro and active-PDF rejection, an EICAR test-signature check, private storage, and a pending-review quarantine. Approved sources receive stable `S` identifiers and are then loaded into the student evidence panel and live AI context. This built-in screening is a pilot control, not a substitute for a managed antivirus scanner; institutions should add a full malware-scanning service before accepting untrusted public uploads.
 
+AI behavior also has an offline-first evaluation harness covering all five workflows. `npm run eval:ai` is deterministic and makes no provider calls; `npm run eval:ai:json` emits CI-friendly JSON. See [docs/AI_EVALUATIONS.md](./docs/AI_EVALUATIONS.md) for scorers, thresholds, exit codes, and the double-locked live Gateway command.
+
 ## Database
 
 The versioned SQL in `migrations/` is applied with `npx @insforge/cli db migrations up --all`. It creates the requested entities, timestamp triggers, owner-scoped student records, role-aware RLS, guarded persistence RPCs, and 12 anonymous fictional cohort responses. New accounts are students by default; a project administrator promotes faculty through the InsForge CLI or dashboard. The zero-credential demo continues to read `src/lib/data.ts`.

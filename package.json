@@ -9,7 +9,10 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "eval:ai": "tsx scripts/ai-eval.ts --mode=offline --format=markdown",
+    "eval:ai:json": "tsx scripts/ai-eval.ts --mode=offline --format=json",
+    "eval:ai:live": "tsx scripts/ai-eval.ts --mode=live --format=markdown"
   },
   "dependencies": {
     "@insforge/sdk": "^1.4.5",
@@ -35,6 +38,7 @@
     "eslint-config-next": "16.2.10",
     "jsdom": "^29.1.1",
     "tailwindcss": "^4",
+    "tsx": "^4.23.1",
     "typescript": "^5",
     "vitest": "^4.1.10"
   }

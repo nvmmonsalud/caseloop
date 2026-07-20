@@ -46,7 +46,10 @@ describe("runAI", () => {
   });
 
   it("generates and validates a live Gateway response", async () => {
-    mockedGenerateText.mockResolvedValue({ output: coachOutput } as never);
+    mockedGenerateText.mockResolvedValue({
+      output: coachOutput,
+      usage: { inputTokens: 120, outputTokens: 45, totalTokens: 165 },
+    } as never);
 
     const result = await runAI("coach", coachInput);
 

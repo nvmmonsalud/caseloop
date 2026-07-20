@@ -11,6 +11,11 @@ import { prompts } from "./prompts";
 import { schemas, type AIFeature } from "./schemas";
 
 export type AIMode = "demo" | "live" | "fallback";
+export type AIGenerationUsage = {
+  inputTokens: number;
+  outputTokens: number;
+  totalTokens: number;
+};
 
 function sourceIdsFromInput(input: unknown) {
   if (!input || typeof input !== "object") return new Set<string>();
@@ -103,37 +108,51 @@ export async function runAI(feature: AIFeature, input: unknown) {
   if (!config.live) return fallback(feature, input, "demo");
 
   try {
-    const schema = schemas[feature] as unknown as z.ZodType<
-      Record<string, unknown>
-    >;
-    const result = await generateText({
-      model: config.model,
-      system: prompts[feature],
-      prompt: JSON.stringify(input),
-      reasoning: config.reasoningEffort,
-      maxOutputTokens: config.maxOutputTokens,
-      maxRetries: 1,
-      timeout: config.timeoutMs,
-      output: Output.object({
-        name: `caseflow_${feature}`,
-        description: `Validated CaseFlow ${feature} response`,
-        schema,
-      }),
-      providerOptions: {
-        gateway: {
-          tags: [`feature:${feature}`, "product:caseloop"],
-        },
-      },
-    });
-
-    const data = schema.parse(result.output);
-    validateFeatureRules(feature, data, input);
+    const { data } = await generateLiveAI(feature, input, config);
     return { data, mode: "live" as const };
   } catch (error) {
     logGenerationFailure(feature, config.model, error);
     if (config.fallbackOnError) return fallback(feature, input, "fallback");
     throw mapAIError(error);
   }
+}
+
+export async function generateLiveAI(
+  feature: AIFeature,
+  input: unknown,
+  config = getAIConfig(),
+) {
+  const schema = schemas[feature] as unknown as z.ZodType<
+    Record<string, unknown>
+  >;
+  const result = await generateText({
+    model: config.model,
+    system: prompts[feature],
+    prompt: JSON.stringify(input),
+    reasoning: config.reasoningEffort,
+    maxOutputTokens: config.maxOutputTokens,
+    maxRetries: 1,
+    timeout: config.timeoutMs,
+    output: Output.object({
+      name: `caseflow_${feature}`,
+      description: `Validated CaseFlow ${feature} response`,
+      schema,
+    }),
+    providerOptions: {
+      gateway: {
+        tags: [`feature:${feature}`, "product:caseloop"],
+      },
+    },
+  });
+
+  const data = schema.parse(result.output);
+  validateFeatureRules(feature, data, input);
+  const usage: AIGenerationUsage = {
+    inputTokens: result.usage.inputTokens ?? 0,
+    outputTokens: result.usage.outputTokens ?? 0,
+    totalTokens: result.usage.totalTokens ?? 0,
+  };
+  return { data, usage, model: config.model };
 }
 
 function mapAIError(error: unknown) {
