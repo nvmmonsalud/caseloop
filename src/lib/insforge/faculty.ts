@@ -7,7 +7,7 @@ import {
   getAuthorizedFacultyCohortSummary,
   getDemoFacultyCohortSummary,
 } from "@/lib/faculty-analytics";
-import { isInsForgePersistenceEnabled } from "./config";
+import { INSFORGE_ASSIGNMENT_ID, isInsForgePersistenceEnabled } from "./config";
 import { requireCaseFlowRole } from "./server";
 
 export async function loadFacultyCohortSummary() {
@@ -18,7 +18,9 @@ export async function loadFacultyCohortSummary() {
   return getAuthorizedFacultyCohortSummary({
     role: session?.role ?? "student",
     rpc: async () => {
-      const { data, error } = await client.database.rpc("get_caseflow_cohort_summary");
+      const { data, error } = await client.database.rpc("get_caseflow_cohort_summary", {
+        target_assignment: INSFORGE_ASSIGNMENT_ID,
+      });
       return {
         data,
         error: error ? { message: error.message } : null,

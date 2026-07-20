@@ -90,7 +90,7 @@ Tests cover exact cohort aggregation and structured AI fallback validation.
 
 The versioned SQL in `migrations/` is applied with `npx @insforge/cli db migrations up --all`. It creates the requested entities, timestamp triggers, owner-scoped student records, role-aware RLS, guarded persistence RPCs, and 12 anonymous fictional cohort responses. New accounts are students by default; a project administrator promotes faculty through the InsForge CLI or dashboard. The zero-credential demo continues to read `src/lib/data.ts`.
 
-Faculty analytics are loaded server-side through `get_caseflow_cohort_summary`. The RPC is course-role gated and returns only completed count, average confidence, position counts, and a bounded set of anonymous representative arguments. Its response is strictly schema-validated before rendering: unexpected identity fields, raw student responses, and preparation briefs are rejected rather than passed to the UI. Evidence counts shown in the insight screen are explicitly limited to the representative sample.
+Faculty analytics are loaded server-side through `get_caseflow_cohort_summary`. The RPC resolves the requested assignment to its course, denies faculty from other courses, and releases completed count, average confidence, position counts, and a bounded set of anonymous representative arguments only after the course anonymity threshold is met. `courses.cohort_minimum_size` defaults to 5, is constrained to 5–50, and may be raised per course. Below the threshold, the RPC returns only `{ suppressed: true, minimumCohortSize }`; it does not reveal the exact small count. Its response is strictly schema-validated before rendering: sub-threshold releases, unexpected identity fields, raw student responses, and preparation briefs are rejected rather than passed to the UI. Evidence counts shown in the insight screen are explicitly limited to the representative sample.
 
 ## Deploy to Vercel
 
@@ -106,7 +106,7 @@ Faculty analytics are loaded server-side through `get_caseflow_cohort_summary`. 
 - Source IDs accompany generated claims; UI separates facts, assumptions, and inference.
 - No model answer and no automated high-stakes grading.
 - Faculty edit and control generated teaching content.
-- Production aggregation should use a security-definer RPC and minimum anonymity threshold.
+- Production aggregation uses a course-scoped security-definer RPC with a minimum cohort threshold of five.
 
 ## How Codex and GPT-5.6 were used
 
@@ -117,5 +117,5 @@ Codex was the implementation partner across repository setup, product/data desig
 - Demo-mode progress remains browser-local by design; live persistence uses InsForge.
 - Faculty promotion is an administrator operation; self-service course administration and live file parsing are not included.
 - Demo coaching is deterministic; live mode uses AI Gateway and automatically returns the same validated fallback shape when a provider call or structured response fails.
-- RLS is foundational, not a completed production security audit.
+- RLS and k-anonymous faculty aggregation are foundational controls, not a completed production security audit.
 - Analytics represent 12 completed synthetic responses in a fictional 24-student cohort.

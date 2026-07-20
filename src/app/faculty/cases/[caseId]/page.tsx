@@ -4,12 +4,25 @@ import { ArrowRight, Quote } from "lucide-react";
 import { AppNav } from "@/components/app-nav";
 import { AssignmentSetup } from "@/components/assignment-setup";
 import { CohortAISummary } from "@/components/cohort-ai-summary";
+import { CohortSuppressedState } from "@/components/cohort-suppressed-state";
 import { caseStudy } from "@/lib/data";
 import { getRepresentativeEvidenceCounts } from "@/lib/faculty-analytics";
 import { loadFacultyCohortSummary } from "@/lib/insforge/faculty";
 
 export default async function Insight() {
   const summary = await loadFacultyCohortSummary();
+  if (summary.suppressed) {
+    return (
+      <>
+        <AppNav role="faculty" />
+        <main className="shell py-10 sm:py-14">
+          <div className="eyebrow">Cohort insight · anonymity protected</div>
+          <h1 className="serif mt-3 text-4xl leading-tight">Where the room is ready—and where it is brittle.</h1>
+          <CohortSuppressedState minimumCohortSize={summary.minimumCohortSize} />
+        </main>
+      </>
+    );
+  }
   const total = summary.completed;
   const sourceTitle = Object.fromEntries(caseStudy.sources.map((source) => [source.id, source.title]));
   const evidence = Object.entries(getRepresentativeEvidenceCounts(summary)).sort((a, b) => b[1] - a[1]);

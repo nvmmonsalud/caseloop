@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight, Clock3, Users } from "lucide-react";
 
 import { AppNav } from "@/components/app-nav";
+import { CohortSuppressedState } from "@/components/cohort-suppressed-state";
 import { Stat } from "@/components/stat";
 import { caseStudy } from "@/lib/data";
 import { getRepresentativeEvidenceCounts } from "@/lib/faculty-analytics";
@@ -9,6 +10,19 @@ import { loadFacultyCohortSummary } from "@/lib/insforge/faculty";
 
 export default async function Faculty() {
   const summary = await loadFacultyCohortSummary();
+  if (summary.suppressed) {
+    return (
+      <>
+        <AppNav role="faculty" />
+        <main className="shell py-10 sm:py-16 fade-up">
+          <div className="eyebrow">Faculty workspace · fictional demo cohort</div>
+          <h1 className="serif mt-2 text-4xl sm:text-5xl">Global Strategy</h1>
+          <p className="mt-3 text-[#68727b]">Cohort 2026 · Section B · privacy-protected analytics</p>
+          <CohortSuppressedState minimumCohortSize={summary.minimumCohortSize} />
+        </main>
+      </>
+    );
+  }
   const total = summary.completed;
   const largestPosition = Object.entries(summary.positions).sort((a, b) => b[1] - a[1])[0];
   const sampleEvidence = getRepresentativeEvidenceCounts(summary);

@@ -22,10 +22,14 @@ const representativeArgumentSchema = z
   })
   .strict();
 
-const cohortSummarySchema = z
+const minimumCohortSizeSchema = z.number().int().min(5).max(50);
+
+const releasedCohortSummarySchema = z
   .object({
+    suppressed: z.literal(false),
+    minimumCohortSize: minimumCohortSizeSchema,
     completed: z.number().int().nonnegative(),
-    averageConfidence: z.number().min(0).max(100).nullable(),
+    averageConfidence: z.number().min(0).max(100),
     positions: z
       .object({
         Acquisition: z.number().int().nonnegative(),
@@ -45,14 +49,30 @@ const cohortSummarySchema = z
         path: ["positions"],
       });
     }
+    if (summary.completed < summary.minimumCohortSize) {
+      context.addIssue({
+        code: "custom",
+        message: "Released cohort data must meet the anonymity threshold.",
+        path: ["completed"],
+      });
+    }
+  });
+
+const suppressedCohortSummarySchema = z
+  .object({
+    suppressed: z.literal(true),
+    minimumCohortSize: minimumCohortSizeSchema,
   })
-  .transform((summary) => ({
-    ...summary,
-    averageConfidence: summary.averageConfidence ?? 0,
-  }));
+  .strict();
+
+const cohortSummarySchema = z.discriminatedUnion("suppressed", [
+  releasedCohortSummarySchema,
+  suppressedCohortSummarySchema,
+]);
 
 export type FacultyCohortSummary = z.output<typeof cohortSummarySchema>;
-export type RepresentativeArgument = FacultyCohortSummary["representativeArguments"][number];
+export type ReleasedFacultyCohortSummary = z.output<typeof releasedCohortSummarySchema>;
+export type RepresentativeArgument = ReleasedFacultyCohortSummary["representativeArguments"][number];
 
 export class FacultyAnalyticsAccessError extends Error {
   constructor() {
@@ -97,6 +117,8 @@ export async function getAuthorizedFacultyCohortSummary({
 export function getDemoFacultyCohortSummary(): FacultyCohortSummary {
   const metrics = cohortMetrics();
   return parseFacultyCohortSummary({
+    suppressed: false,
+    minimumCohortSize: 5,
     completed: metrics.completed,
     averageConfidence: metrics.averageConfidence,
     positions: metrics.positions,
@@ -109,7 +131,7 @@ export function getDemoFacultyCohortSummary(): FacultyCohortSummary {
   });
 }
 
-export function getRepresentativeEvidenceCounts(summary: FacultyCohortSummary) {
+export function getRepresentativeEvidenceCounts(summary: ReleasedFacultyCohortSummary) {
   return summary.representativeArguments
     .flatMap((argument) => argument.evidence)
     .reduce<Record<string, number>>((counts, sourceId) => {
