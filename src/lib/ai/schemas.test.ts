@@ -51,7 +51,7 @@ describe("AI structured outputs", () => {
 
   it("rejects unknown source IDs and out-of-range confidence", () => {
     expect(
-      coachSchema.safeParse({ ...fallbacks.coach, sourceIds: ["S99"] }).success,
+      coachSchema.safeParse({ ...fallbacks.coach, sourceIds: ["S100"] }).success,
     ).toBe(false);
     expect(
       briefSchema.safeParse({ ...fallbacks.brief, confidence: 120 }).success,

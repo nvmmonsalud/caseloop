@@ -1,15 +1,215 @@
 import { demoBrief } from "@/lib/data";
-export const fallbacks={
- coach:{question:"What must be true for outlet access to become effective distribution?",challenge:"The partner's 18,000-outlet access [S5] does not establish service levels or sell-through.",sourceIds:["S5"],inference:"Governance design may matter more than the headline outlet count."},
- brief:{recommendation:demoBrief.recommendation,evidence:demoBrief.evidence,assumptions:demoBrief.assumptions,tradeoffs:demoBrief.tradeoffs,counterargument:demoBrief.counterargument,openQuestion:demoBrief.question,confidence:demoBrief.confidence},
- cohort:{misconceptions:[{title:"Outlet access equals coverage",evidence:"Three responses overgeneralize [S5].",count:3}],overlookedSourceIds:["S4"],discussionTensions:["Speed versus integration capacity","Control versus staged commitment"]},
- plan:{openingQuestion:"If Hikari had to sign one agreement today, which fact should carry the decision?",segments:[{minutes:8,title:"Opening commitment",prompt:"Choose a path and name its decisive fact."},{minutes:12,title:"Make speed measurable",prompt:"Define the cost of delay."},{minutes:15,title:"Stress-test the joint venture",prompt:"Test whether outlet access becomes effective reach."},{minutes:13,title:"Put execution on the board",prompt:"Compare capital, control, localization, and organizational capacity."},{minutes:9,title:"Force a reversal",prompt:"Name the evidence that would make each position switch."},{minutes:3,title:"Closing synthesis",prompt:"Name the no-regret move and next decision gate."}],boardPlan:["Decision criteria","Acquisition / JV / Organic","Speed ↔ control ↔ capital","Decision gates"],closingSynthesis:"Entry is a sequence of commitments, not only a mode."},
- reflection:{positionShift:"The position remained stable.",reasoningShift:"The rationale became more conditional on governance quality.",weakenedAssumption:"Outlet access translates directly into effective reach.",newEvidence:"Operating capacity [S4] gained importance."}
+export const fallbacks = {
+  coach: {
+    question:
+      "What must be true for outlet access to become effective distribution?",
+    challenge:
+      "The partner's 18,000-outlet access [S5] does not establish service levels or sell-through.",
+    sourceIds: ["S5"],
+    inference:
+      "Governance design may matter more than the headline outlet count.",
+  },
+  brief: {
+    recommendation: demoBrief.recommendation,
+    evidence: demoBrief.evidence,
+    assumptions: demoBrief.assumptions,
+    tradeoffs: demoBrief.tradeoffs,
+    counterargument: demoBrief.counterargument,
+    openQuestion: demoBrief.question,
+    confidence: demoBrief.confidence,
+  },
+  cohort: {
+    misconceptions: [
+      {
+        title: "Outlet access equals coverage",
+        evidence: "Three responses overgeneralize [S5].",
+        count: 3,
+      },
+    ],
+    overlookedSourceIds: ["S4"],
+    discussionTensions: [
+      "Speed versus integration capacity",
+      "Control versus staged commitment",
+    ],
+  },
+  plan: {
+    openingQuestion:
+      "If Hikari had to sign one agreement today, which fact should carry the decision?",
+    segments: [
+      {
+        minutes: 8,
+        title: "Opening commitment",
+        prompt: "Choose a path and name its decisive fact.",
+      },
+      {
+        minutes: 12,
+        title: "Make speed measurable",
+        prompt: "Define the cost of delay.",
+      },
+      {
+        minutes: 15,
+        title: "Stress-test the joint venture",
+        prompt: "Test whether outlet access becomes effective reach.",
+      },
+      {
+        minutes: 13,
+        title: "Put execution on the board",
+        prompt:
+          "Compare capital, control, localization, and organizational capacity.",
+      },
+      {
+        minutes: 9,
+        title: "Force a reversal",
+        prompt: "Name the evidence that would make each position switch.",
+      },
+      {
+        minutes: 3,
+        title: "Closing synthesis",
+        prompt: "Name the no-regret move and next decision gate.",
+      },
+    ],
+    boardPlan: [
+      "Decision criteria",
+      "Acquisition / JV / Organic",
+      "Speed ↔ control ↔ capital",
+      "Decision gates",
+    ],
+    closingSynthesis: "Entry is a sequence of commitments, not only a mode.",
+  },
+  reflection: {
+    positionShift: "The position remained stable.",
+    reasoningShift:
+      "The rationale became more conditional on governance quality.",
+    weakenedAssumption:
+      "Outlet access translates directly into effective reach.",
+    newEvidence: "Operating capacity [S4] gained importance.",
+  },
 };
-export function getDemoFallback(feature:keyof typeof fallbacks,input:unknown){const context=(input&&typeof input==="object"?input:{}) as Record<string,unknown>;const student=(context.student&&typeof context.student==="object"?context.student:context.preClass&&typeof context.preClass==="object"?context.preClass:{}) as Record<string,unknown>;
- if(feature==="coach"&&student.recommendation){const prior=String(context.priorResponse||"").replace(/[.!?]+$/,"");const recommendation=String(student.recommendation).replace(/[.!?]+$/,"");const evidence=String(student.evidence||"the evidence supports this path").replace(/[.!?]+$/,"");return {...fallbacks.coach,question:prior?`You argued “${prior.slice(0,120)}${prior.length>120?"…":""}”. Which conflicting case fact would make you revise that assumption?`:`You recommend “${recommendation}”. What must be true for that choice to outperform the next-best option?`,challenge:prior?"Now answer from the perspective of the stakeholder carrying the greatest execution risk.":`Which source most weakens your claim that “${evidence}”?`};}
- if(feature==="brief"&&student.position){const sourceId=String(student.evidence||"").match(/S[1-5]/)?.[0]||"S2";const risk=String(student.risk||"execution uncertainty").replace(/[.!?]+$/,"");const mitigation=String(student.mitigation||"stage the commitment").replace(/[.!?]+$/,"");const counters:Record<string,string>={"Acquisition":"A joint venture preserves capital and adds local knowledge while retaining a path to control.","Joint venture":fallbacks.brief.counterargument,"Organic entry":"A joint venture could reach the market faster while keeping capital exposure below an acquisition."};return {...fallbacks.brief,recommendation:`${student.position}: ${student.rationale||student.recommendation}`,evidence:[{claim:String(student.evidence||"Student-cited evidence"),sourceId}],assumptions:[String(student.coachResponse||student.uncertainty||"The key execution assumption remains untested.")],tradeoffs:`Key risk: ${risk}. Mitigation: ${mitigation}.`,counterargument:counters[String(student.position)]||fallbacks.brief.counterargument,openQuestion:String(student.uncertainty||fallbacks.brief.openQuestion),confidence:Number(student.confidence)||fallbacks.brief.confidence};}
- if(feature==="cohort"&&Array.isArray(context.responses)){const responses=context.responses as Array<Record<string,unknown>>;const accessCount=responses.filter(r=>/access|outlet|distribution/i.test(String(r.assumption||""))).length;const cited=new Set(responses.flatMap(r=>Array.isArray(r.evidence)?r.evidence.map(String):[]));return {...fallbacks.cohort,misconceptions:[{title:"Distribution access is treated as effective reach",evidence:`${accessCount} responses use access, outlet, or distribution assumptions.`,count:accessCount}],overlookedSourceIds:["S1","S2","S3","S4","S5"].filter(id=>!cited.has(id)||responses.filter(r=>Array.isArray(r.evidence)&&r.evidence.includes(id)).length<responses.length/3)};}
- if(feature==="plan"&&Number(context.duration)===90){const minutes=[12,18,23,19,14,4];return {...fallbacks.plan,segments:fallbacks.plan.segments.map((segment,i)=>({...segment,minutes:minutes[i]}))};}
- if(feature==="reflection"){const post=String(context.postClass||"");return {...fallbacks.reflection,positionShift:`Compared with the pre-class ${student.position||"position"}, the reflection now emphasizes: ${post.slice(0,140)}${post.length>140?"…":""}`,reasoningShift:"The reasoning adds post-class evidence and makes the original recommendation more conditional.",weakenedAssumption:String(student.uncertainty||fallbacks.reflection.weakenedAssumption),newEvidence:post||fallbacks.reflection.newEvidence};}
- return fallbacks[feature];}
+export function getDemoFallback(
+  feature: keyof typeof fallbacks,
+  input: unknown,
+) {
+  const context = (input && typeof input === "object" ? input : {}) as Record<
+    string,
+    unknown
+  >;
+  const student = (
+    context.student && typeof context.student === "object"
+      ? context.student
+      : context.preClass && typeof context.preClass === "object"
+        ? context.preClass
+        : {}
+  ) as Record<string, unknown>;
+  if (feature === "coach" && student.recommendation) {
+    const prior = String(context.priorResponse || "").replace(/[.!?]+$/, "");
+    const recommendation = String(student.recommendation).replace(
+      /[.!?]+$/,
+      "",
+    );
+    const evidence = String(
+      student.evidence || "the evidence supports this path",
+    ).replace(/[.!?]+$/, "");
+    return {
+      ...fallbacks.coach,
+      question: prior
+        ? `You argued “${prior.slice(0, 120)}${prior.length > 120 ? "…" : ""}”. Which conflicting case fact would make you revise that assumption?`
+        : `You recommend “${recommendation}”. What must be true for that choice to outperform the next-best option?`,
+      challenge: prior
+        ? "Now answer from the perspective of the stakeholder carrying the greatest execution risk."
+        : `Which source most weakens your claim that “${evidence}”?`,
+    };
+  }
+  if (feature === "brief" && student.position) {
+    const sourceId =
+      String(student.evidence || "").match(/S\d{1,2}/)?.[0] || "S2";
+    const risk = String(student.risk || "execution uncertainty").replace(
+      /[.!?]+$/,
+      "",
+    );
+    const mitigation = String(
+      student.mitigation || "stage the commitment",
+    ).replace(/[.!?]+$/, "");
+    const counters: Record<string, string> = {
+      Acquisition:
+        "A joint venture preserves capital and adds local knowledge while retaining a path to control.",
+      "Joint venture": fallbacks.brief.counterargument,
+      "Organic entry":
+        "A joint venture could reach the market faster while keeping capital exposure below an acquisition.",
+    };
+    return {
+      ...fallbacks.brief,
+      recommendation: `${student.position}: ${student.rationale || student.recommendation}`,
+      evidence: [
+        {
+          claim: String(student.evidence || "Student-cited evidence"),
+          sourceId,
+        },
+      ],
+      assumptions: [
+        String(
+          student.coachResponse ||
+            student.uncertainty ||
+            "The key execution assumption remains untested.",
+        ),
+      ],
+      tradeoffs: `Key risk: ${risk}. Mitigation: ${mitigation}.`,
+      counterargument:
+        counters[String(student.position)] || fallbacks.brief.counterargument,
+      openQuestion: String(student.uncertainty || fallbacks.brief.openQuestion),
+      confidence: Number(student.confidence) || fallbacks.brief.confidence,
+    };
+  }
+  if (feature === "cohort" && Array.isArray(context.responses)) {
+    const responses = context.responses as Array<Record<string, unknown>>;
+    const accessCount = responses.filter((r) =>
+      /access|outlet|distribution/i.test(String(r.assumption || "")),
+    ).length;
+    const cited = new Set(
+      responses.flatMap((r) =>
+        Array.isArray(r.evidence) ? r.evidence.map(String) : [],
+      ),
+    );
+    return {
+      ...fallbacks.cohort,
+      misconceptions: [
+        {
+          title: "Distribution access is treated as effective reach",
+          evidence: `${accessCount} responses use access, outlet, or distribution assumptions.`,
+          count: accessCount,
+        },
+      ],
+      overlookedSourceIds: ["S1", "S2", "S3", "S4", "S5"].filter(
+        (id) =>
+          !cited.has(id) ||
+          responses.filter(
+            (r) => Array.isArray(r.evidence) && r.evidence.includes(id),
+          ).length <
+            responses.length / 3,
+      ),
+    };
+  }
+  if (feature === "plan" && Number(context.duration) === 90) {
+    const minutes = [12, 18, 23, 19, 14, 4];
+    return {
+      ...fallbacks.plan,
+      segments: fallbacks.plan.segments.map((segment, i) => ({
+        ...segment,
+        minutes: minutes[i],
+      })),
+    };
+  }
+  if (feature === "reflection") {
+    const post = String(context.postClass || "");
+    return {
+      ...fallbacks.reflection,
+      positionShift: `Compared with the pre-class ${student.position || "position"}, the reflection now emphasizes: ${post.slice(0, 140)}${post.length > 140 ? "…" : ""}`,
+      reasoningShift:
+        "The reasoning adds post-class evidence and makes the original recommendation more conditional.",
+      weakenedAssumption: String(
+        student.uncertainty || fallbacks.reflection.weakenedAssumption,
+      ),
+      newEvidence: post || fallbacks.reflection.newEvidence,
+    };
+  }
+  return fallbacks[feature];
+}

@@ -3,8 +3,8 @@
 ## Next: pilot readiness
 
 - Expand InsForge authentication with institution-managed invitations, MFA, and a recurring RLS audit
-- Secure PDF/DOCX ingestion with type, size, malware, and citation checks
-- Faculty rubric editor and explicit feedback-release workflow
+- Add managed antivirus scanning and OCR to the quarantined PDF/DOCX ingestion workflow
+- Pilot the faculty rubric editor and explicit shared-feedback release workflow
 - Cohort aggregation with minimum anonymity thresholds
 - Evaluation harness for grounding and non-answer-giving behavior
 

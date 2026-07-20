@@ -3,7 +3,7 @@ import { z } from "zod";
 import { cohortMetrics } from "./analytics";
 import { studentResponses } from "./data";
 
-const sourceIdSchema = z.string().regex(/^S[1-5]$/);
+const sourceIdSchema = z.string().regex(/^S\d{1,2}$/);
 const positionSchema = z
   .enum(["acquisition", "joint_venture", "organic_entry", "Acquisition", "Joint venture", "Organic entry"])
   .transform((position) => {

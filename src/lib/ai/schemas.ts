@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 const conciseText = z.string().trim().min(1).max(2_000);
-export const sourceIdSchema = z.enum(["S1", "S2", "S3", "S4", "S5"]);
+export const sourceIdSchema = z.string().regex(/^S\d{1,2}$/, "Use a supplied S-number source identifier.");
 
 export const coachSchema = z.object({
   question: conciseText.describe("One open Socratic question, not an answer."),
@@ -42,7 +42,7 @@ export const cohortSchema = z.object({
       }),
     )
     .max(12),
-  overlookedSourceIds: z.array(sourceIdSchema).max(5),
+  overlookedSourceIds: z.array(sourceIdSchema).max(12),
   discussionTensions: z.array(conciseText).max(8),
 });
 

@@ -86,11 +86,26 @@ npm run build
 
 Tests cover exact cohort aggregation and structured AI fallback validation.
 
+## Pilot controls and secure case material
+
+Faculty can edit a bounded reasoning rubric, keep it as a faculty-only draft, and explicitly release or withdraw the rubric and shared post-class feedback. Released content is course-scoped and intentionally contains no automated grade or individual student response.
+
+PDF and DOCX ingestion is available only to authenticated faculty when persistence is enabled. The server enforces a 4 MB limit, extension/MIME/magic-byte agreement, SHA-256 hashing, plain-text extraction, macro and active-PDF rejection, an EICAR test-signature check, private storage, and a pending-review quarantine. Approved sources receive stable `S` identifiers and are then loaded into the student evidence panel and live AI context. This built-in screening is a pilot control, not a substitute for a managed antivirus scanner; institutions should add a full malware-scanning service before accepting untrusted public uploads.
+
 ## Database
 
 The versioned SQL in `migrations/` is applied with `npx @insforge/cli db migrations up --all`. It creates the requested entities, timestamp triggers, owner-scoped student records, role-aware RLS, guarded persistence RPCs, and 12 anonymous fictional cohort responses. New accounts are students by default; a project administrator promotes faculty through the InsForge CLI or dashboard. The zero-credential demo continues to read `src/lib/data.ts`.
 
 Faculty analytics are loaded server-side through `get_caseflow_cohort_summary`. The RPC resolves the requested assignment to its course, denies faculty from other courses, and releases completed count, average confidence, position counts, and a bounded set of anonymous representative arguments only after the course anonymity threshold is met. `courses.cohort_minimum_size` defaults to 5, is constrained to 5–50, and may be raised per course. Below the threshold, the RPC returns only `{ suppressed: true, minimumCohortSize }`; it does not reveal the exact small count. Its response is strictly schema-validated before rendering: sub-threshold releases, unexpected identity fields, raw student responses, and preparation briefs are rejected rather than passed to the UI. Evidence counts shown in the insight screen are explicitly limited to the representative sample.
+
+The pilot migration also requires a private InsForge Storage bucket named `case-materials`:
+
+```bash
+npx @insforge/cli storage create-bucket case-materials --private
+npx @insforge/cli db migrations up --all
+```
+
+Create and test the bucket and migration on an InsForge backend branch before merging them into the parent project. Storage RLS limits uploads and raw-file reads to faculty enrolled in the course; students receive only approved, extracted source text through application-table RLS.
 
 ## Deploy to Vercel
 
@@ -118,4 +133,5 @@ Codex was the implementation partner across repository setup, product/data desig
 - Faculty promotion is an administrator operation; self-service course administration and live file parsing are not included.
 - Demo coaching is deterministic; live mode uses AI Gateway and automatically returns the same validated fallback shape when a provider call or structured response fails.
 - RLS and k-anonymous faculty aggregation are foundational controls, not a completed production security audit.
+- Pilot document screening blocks common active-content and test-malware signatures, but institutional use still requires a managed malware scanner and OCR for image-only PDFs.
 - Analytics represent 12 completed synthetic responses in a fictional 24-student cohort.

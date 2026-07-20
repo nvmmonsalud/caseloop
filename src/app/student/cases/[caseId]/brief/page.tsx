@@ -1,2 +1,2 @@
-import { AppNav } from "@/components/app-nav"; import { PreparationBrief } from "@/components/preparation-brief"; import { requireCaseFlowRole } from "@/lib/insforge/server";
-export default async function BriefPage(){await requireCaseFlowRole("student");return <><AppNav role="student"/><PreparationBrief/></>}
+import { AppNav } from "@/components/app-nav"; import { PreparationBrief } from "@/components/preparation-brief"; import { loadStudentCaseSources } from "@/lib/insforge/case-materials";
+export default async function BriefPage(){const sources=await loadStudentCaseSources();return <><AppNav role="student"/><PreparationBrief sources={sources}/></>}

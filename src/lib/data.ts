@@ -1,9 +1,13 @@
 export const POSITION_OPTIONS=["Acquisition","Joint venture","Organic entry"] as const;
 export type Position = typeof POSITION_OPTIONS[number];
 export type StudentResponse = { id:string; position:Position; confidence:number; evidence:string[]; assumption:string; rationale:string; support:"strong"|"mixed"|"weak" };
+export type CaseSource = { id:string; title:string; type:string; text:string };
 
 export const CASE_ID = "hikari-philippines";
-export const caseStudy = {
+export const caseStudy: {
+  id:string; title:string; fictional:boolean; course:string; due:string; summary:string;
+  objectives:string[]; sources:CaseSource[]; facts:string[][];
+} = {
   id:CASE_ID,
   title:"Hikari Foods: Choosing a Market Entry Strategy for the Philippines",
   fictional:true,
