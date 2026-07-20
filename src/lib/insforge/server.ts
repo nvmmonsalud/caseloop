@@ -4,6 +4,7 @@ import { createServerClient } from "@insforge/sdk/ssr";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { isInsForgePersistenceEnabled } from "./config";
+import { buildLoginPath, roleHome } from "@/lib/auth/navigation";
 
 export type CaseFlowSession = {
   userId: string;
@@ -48,7 +49,7 @@ export async function requireCaseFlowRole(role: "student" | "faculty") {
   if (!isInsForgePersistenceEnabled()) return null;
 
   const session = await getCaseFlowSession();
-  if (!session) redirect(`/login?next=/${role}`);
-  if (session.role !== role) redirect(session.role === "faculty" ? "/faculty" : "/student");
+  if (!session) redirect(buildLoginPath(`/${role}`, "sign_in_required"));
+  if (session.role !== role) redirect(roleHome(session.role));
   return session;
 }

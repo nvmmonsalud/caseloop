@@ -60,6 +60,17 @@ Open `http://localhost:3000/demo`. Demo mode needs no external account. Choose *
 | `NEXT_PUBLIC_INSFORGE_ANON_KEY` | Persistence only | Browser-safe InsForge anon key |
 | `NEXT_PUBLIC_APP_URL` | Persistence only | Public origin used for auth redirects |
 
+### Authentication configuration
+
+InsForge owns access/refresh cookie names, expiration, rotation, and cookie attributes through `@insforge/sdk/ssr`. The refresh credential is `HttpOnly`; cookies use `SameSite=Lax`, become `Secure` in production, use path `/`, and expire with their JWT. CaseFlow does not store authentication tokens in browser storage.
+
+Email verification redirects must be exact, allowlisted app URLs. The committed `insforge.toml` proposes:
+
+- `http://localhost:3000/login`
+- `https://caseloop-zeta.vercel.app/login`
+
+Before enabling verification on another origin, add its exact `/login` URL to `auth.allowed_redirect_urls`, set `NEXT_PUBLIC_APP_URL` to that HTTPS origin, review with `npx @insforge/cli config plan`, and apply only after approval. Preview deployment URLs are not automatically trusted. InsForge SMTP currently enforces a 60-second minimum interval, and the UI never retries verification email automatically.
+
 ## Testing
 
 ```bash

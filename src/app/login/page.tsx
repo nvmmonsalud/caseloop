@@ -3,20 +3,22 @@ import { GraduationCap, ShieldCheck } from "lucide-react";
 import { redirect } from "next/navigation";
 import { getCaseFlowSession } from "@/lib/insforge/server";
 import { isInsForgePersistenceEnabled } from "@/lib/insforge/config";
+import { getLoginNotice, roleHome, safeInternalPath } from "@/lib/auth/navigation";
 import { AuthForm } from "./auth-form";
 
 export default async function Login({
   searchParams,
 }: {
-  searchParams: Promise<{ next?: string; verified?: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   if (!isInsForgePersistenceEnabled()) redirect("/demo");
 
   const session = await getCaseFlowSession();
-  if (session) redirect(session.role === "faculty" ? "/faculty" : "/student");
+  if (session) redirect(roleHome(session.role));
 
   const params = await searchParams;
-  const nextPath = params.next?.startsWith("/") && !params.next.startsWith("//") ? params.next : "/student";
+  const nextPath = safeInternalPath(Array.isArray(params.next) ? params.next[0] : params.next);
+  const notice = getLoginNotice(params);
 
   return (
     <main className="min-h-screen grid lg:grid-cols-[1.05fr_.95fr]">
@@ -40,8 +42,7 @@ export default async function Login({
           <div className="eyebrow">CaseFlow account</div>
           <h2 className="serif mt-3 text-4xl">Welcome to class preparation.</h2>
           <p className="mt-3 text-sm leading-6 text-[#68727b]">Sign in to resume your private workspace.</p>
-          {params.verified === "true" && <p className="mt-4 text-sm text-[#355b40]">Email verified. You can sign in now.</p>}
-          <div className="mt-8"><AuthForm nextPath={nextPath} /></div>
+          <div className="mt-8"><AuthForm nextPath={nextPath} notice={notice} /></div>
         </div>
       </section>
     </main>

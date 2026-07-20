@@ -1,5 +1,5 @@
 [auth]
-allowed_redirect_urls = ["http://localhost:3000/login?verified=true", "https://caseloop-zeta.vercel.app/login?verified=true"]
+allowed_redirect_urls = ["http://localhost:3000/login", "https://caseloop-zeta.vercel.app/login"]
 require_email_verification = true
 verify_email_method = "link"
 reset_password_method = "code"
