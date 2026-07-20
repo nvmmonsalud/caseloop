@@ -75,6 +75,8 @@ Tests cover exact cohort aggregation and structured AI fallback validation.
 
 The versioned SQL in `migrations/` is applied with `npx @insforge/cli db migrations up --all`. It creates the requested entities, timestamp triggers, owner-scoped student records, role-aware RLS, guarded persistence RPCs, and 12 anonymous fictional cohort responses. New accounts are students by default; a project administrator promotes faculty through the InsForge CLI or dashboard. The zero-credential demo continues to read `src/lib/data.ts`.
 
+Faculty analytics are loaded server-side through `get_caseflow_cohort_summary`. The RPC is course-role gated and returns only completed count, average confidence, position counts, and a bounded set of anonymous representative arguments. Its response is strictly schema-validated before rendering: unexpected identity fields, raw student responses, and preparation briefs are rejected rather than passed to the UI. Evidence counts shown in the insight screen are explicitly limited to the representative sample.
+
 ## Deploy to Vercel
 
 1. Import this repository; use the Next.js preset and repository root.
