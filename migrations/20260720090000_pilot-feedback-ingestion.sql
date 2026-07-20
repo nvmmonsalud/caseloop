@@ -3,6 +3,16 @@
 ALTER TABLE public.assignments
   ADD COLUMN rubric_released_at TIMESTAMPTZ;
 
+ALTER TABLE public.assignments ALTER COLUMN rubric SET DEFAULT '[]'::jsonb;
+UPDATE public.assignments
+SET rubric = '[
+  {"title":"Evidence use","description":"Ground claims in the provided case sources.","weight":40},
+  {"title":"Assumption quality","description":"Separate known facts from assumptions and uncertainty.","weight":30},
+  {"title":"Trade-off reasoning","description":"Compare speed, control, capital, and execution risk.","weight":30}
+]'::jsonb
+WHERE id = '40000000-0000-0000-0000-000000000001'
+  AND jsonb_typeof(rubric) <> 'array';
+
 CREATE TABLE public.assignment_feedback (
   assignment_id UUID PRIMARY KEY REFERENCES public.assignments(id) ON DELETE CASCADE,
   faculty_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE RESTRICT,
@@ -102,7 +112,8 @@ CREATE OR REPLACE FUNCTION public.save_caseflow_assignment_pilot_settings(
   rubric_payload JSONB,
   feedback_title TEXT,
   feedback_body TEXT,
-  release_to_students BOOLEAN DEFAULT false
+  release_rubric_to_students BOOLEAN DEFAULT false,
+  release_feedback_to_students BOOLEAN DEFAULT false
 )
 RETURNS JSONB
 LANGUAGE plpgsql SECURITY DEFINER
@@ -113,6 +124,7 @@ DECLARE
   course_uuid CONSTANT UUID := '30000000-0000-0000-0000-000000000001';
   current_user_id UUID := (SELECT auth.uid());
   total_weight INTEGER;
+  has_feedback_input BOOLEAN;
 BEGIN
   IF current_user_id IS NULL OR NOT public.is_caseflow_course_faculty(course_uuid) THEN
     RAISE EXCEPTION 'Faculty access required' USING ERRCODE = '42501';
@@ -135,23 +147,37 @@ BEGIN
   IF jsonb_array_length(rubric_payload) > 0 AND total_weight <> 100 THEN
     RAISE EXCEPTION 'Rubric weights must total 100';
   END IF;
-  IF COALESCE(char_length(btrim(feedback_title)), 0) NOT BETWEEN 2 AND 120
-    OR COALESCE(char_length(btrim(feedback_body)), 0) NOT BETWEEN 1 AND 4000 THEN
-    RAISE EXCEPTION 'Shared feedback title and body are required';
+  has_feedback_input := COALESCE(btrim(feedback_title), '') <> '' OR COALESCE(btrim(feedback_body), '') <> '';
+  IF has_feedback_input AND (
+    COALESCE(char_length(btrim(feedback_title)), 0) NOT BETWEEN 2 AND 120
+    OR COALESCE(char_length(btrim(feedback_body)), 0) NOT BETWEEN 1 AND 4000
+  ) THEN
+    RAISE EXCEPTION 'Shared feedback requires both a title and body';
+  END IF;
+  IF release_feedback_to_students AND NOT has_feedback_input AND NOT EXISTS (
+    SELECT 1 FROM public.assignment_feedback WHERE assignment_id = assignment_uuid
+  ) THEN
+    RAISE EXCEPTION 'Shared feedback must be saved before release';
   END IF;
 
   UPDATE public.assignments SET
     rubric = rubric_payload,
-    rubric_released_at = CASE WHEN release_to_students THEN COALESCE(rubric_released_at, now()) ELSE NULL END
+    rubric_released_at = CASE WHEN release_rubric_to_students THEN COALESCE(rubric_released_at, now()) ELSE NULL END
   WHERE id = assignment_uuid;
 
-  INSERT INTO public.assignment_feedback (assignment_id, faculty_id, title, body, released_at)
-  VALUES (assignment_uuid, current_user_id, btrim(feedback_title), btrim(feedback_body), CASE WHEN release_to_students THEN now() ELSE NULL END)
-  ON CONFLICT (assignment_id) DO UPDATE SET
-    faculty_id = EXCLUDED.faculty_id,
-    title = EXCLUDED.title,
-    body = EXCLUDED.body,
-    released_at = CASE WHEN release_to_students THEN COALESCE(public.assignment_feedback.released_at, now()) ELSE NULL END;
+  IF has_feedback_input THEN
+    INSERT INTO public.assignment_feedback (assignment_id, faculty_id, title, body, released_at)
+    VALUES (assignment_uuid, current_user_id, btrim(feedback_title), btrim(feedback_body), CASE WHEN release_feedback_to_students THEN now() ELSE NULL END)
+    ON CONFLICT (assignment_id) DO UPDATE SET
+      faculty_id = EXCLUDED.faculty_id,
+      title = EXCLUDED.title,
+      body = EXCLUDED.body,
+      released_at = CASE WHEN release_feedback_to_students THEN COALESCE(public.assignment_feedback.released_at, now()) ELSE NULL END;
+  ELSE
+    UPDATE public.assignment_feedback
+    SET released_at = CASE WHEN release_feedback_to_students THEN COALESCE(released_at, now()) ELSE NULL END
+    WHERE assignment_id = assignment_uuid;
+  END IF;
 
   RETURN public.get_caseflow_assignment_pilot_settings();
 END;
@@ -172,12 +198,15 @@ LANGUAGE plpgsql SECURITY DEFINER
 SET search_path = pg_catalog, public, pg_temp
 AS $$
 DECLARE
-  case_uuid CONSTANT UUID := '20000000-0000-0000-0000-000000000001';
-  course_uuid CONSTANT UUID := '30000000-0000-0000-0000-000000000001';
+  assignment_uuid CONSTANT UUID := '40000000-0000-0000-0000-000000000001';
+  case_uuid UUID;
+  course_uuid UUID;
   current_user_id UUID := (SELECT auth.uid());
   next_source_key TEXT;
   source_id UUID;
 BEGIN
+  SELECT assignment.case_id, assignment.course_id INTO case_uuid, course_uuid
+  FROM public.assignments assignment WHERE assignment.id = assignment_uuid;
   IF current_user_id IS NULL OR NOT public.is_caseflow_course_faculty(course_uuid) THEN
     RAISE EXCEPTION 'Faculty access required' USING ERRCODE = '42501';
   END IF;
@@ -214,18 +243,21 @@ LANGUAGE plpgsql SECURITY DEFINER
 SET search_path = pg_catalog, public, pg_temp
 AS $$
 DECLARE
-  course_uuid CONSTANT UUID := '30000000-0000-0000-0000-000000000001';
   current_user_id UUID := (SELECT auth.uid());
   affected INTEGER;
 BEGIN
-  IF current_user_id IS NULL OR NOT public.is_caseflow_course_faculty(course_uuid) THEN
-    RAISE EXCEPTION 'Faculty access required' USING ERRCODE = '42501';
-  END IF;
+  IF current_user_id IS NULL THEN RAISE EXCEPTION 'Faculty access required' USING ERRCODE = '42501'; END IF;
   UPDATE public.case_sources SET
     review_status = CASE WHEN approve THEN 'approved' ELSE 'rejected' END,
     reviewed_by = current_user_id,
     reviewed_at = now()
-  WHERE id = source_id_input AND source_type = 'faculty_upload';
+  WHERE id = source_id_input
+    AND source_type = 'faculty_upload'
+    AND EXISTS (
+      SELECT 1 FROM public.assignments assignment
+      WHERE assignment.case_id = case_sources.case_id
+        AND public.is_caseflow_course_faculty(assignment.course_id)
+    );
   GET DIAGNOSTICS affected = ROW_COUNT;
   IF affected <> 1 THEN RAISE EXCEPTION 'Source not found'; END IF;
   RETURN jsonb_build_object('reviewed', true, 'status', CASE WHEN approve THEN 'approved' ELSE 'rejected' END);
@@ -262,17 +294,36 @@ CREATE POLICY caseflow_materials_faculty_delete ON storage.objects
     AND public.is_caseflow_course_faculty(public.caseflow_storage_course_id(key))
   );
 
+CREATE OR REPLACE FUNCTION public.sync_caseflow_response_source_ids()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SET search_path = pg_catalog, public, pg_temp
+AS $$
+BEGIN
+  NEW.source_ids := ARRAY(
+    SELECT DISTINCT citation[1]
+    FROM regexp_matches(NEW.content, E'\\[(S(?:[1-9]|[1-9][0-9]))\\]', 'g') AS citation
+  );
+  RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER student_responses_sync_source_ids
+  BEFORE INSERT OR UPDATE OF content ON public.student_responses
+  FOR EACH ROW EXECUTE FUNCTION public.sync_caseflow_response_source_ids();
+
 GRANT SELECT, INSERT, DELETE ON storage.objects TO authenticated;
 GRANT USAGE ON SCHEMA storage TO authenticated;
 
 REVOKE ALL ON FUNCTION public.get_caseflow_assignment_pilot_settings() FROM PUBLIC;
-REVOKE ALL ON FUNCTION public.save_caseflow_assignment_pilot_settings(JSONB, TEXT, TEXT, BOOLEAN) FROM PUBLIC;
+REVOKE ALL ON FUNCTION public.save_caseflow_assignment_pilot_settings(JSONB, TEXT, TEXT, BOOLEAN, BOOLEAN) FROM PUBLIC;
 REVOKE ALL ON FUNCTION public.register_caseflow_source(TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, INTEGER, TEXT) FROM PUBLIC;
 REVOKE ALL ON FUNCTION public.review_caseflow_source(UUID, BOOLEAN) FROM PUBLIC;
 REVOKE ALL ON FUNCTION public.caseflow_storage_course_id(TEXT) FROM PUBLIC;
+REVOKE ALL ON FUNCTION public.sync_caseflow_response_source_ids() FROM PUBLIC;
 
 GRANT EXECUTE ON FUNCTION public.get_caseflow_assignment_pilot_settings() TO authenticated;
-GRANT EXECUTE ON FUNCTION public.save_caseflow_assignment_pilot_settings(JSONB, TEXT, TEXT, BOOLEAN) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.save_caseflow_assignment_pilot_settings(JSONB, TEXT, TEXT, BOOLEAN, BOOLEAN) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.register_caseflow_source(TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, INTEGER, TEXT) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.review_caseflow_source(UUID, BOOLEAN) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.caseflow_storage_course_id(TEXT) TO authenticated;

@@ -16,7 +16,7 @@ export const runtime = "nodejs";
 export const maxDuration = 30;
 
 const courseId = "30000000-0000-0000-0000-000000000001";
-const caseId = "20000000-0000-0000-0000-000000000001";
+const caseId = "10000000-0000-0000-0000-000000000001";
 const titleSchema = z.string().trim().min(2).max(160);
 
 function sameOrigin(request: Request) {

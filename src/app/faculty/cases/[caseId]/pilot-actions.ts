@@ -17,9 +17,16 @@ const submissionSchema = z.object({
       return z.NEVER;
     }
   }),
-  feedbackTitle: z.string().trim().min(2).max(120),
-  feedbackBody: z.string().trim().min(1).max(4_000),
-  release: z.boolean(),
+  feedbackTitle: z.string().trim().max(120),
+  feedbackBody: z.string().trim().max(4_000),
+  releaseRubric: z.boolean(),
+  releaseFeedback: z.boolean(),
+}).superRefine((submission, context) => {
+  const hasTitle = submission.feedbackTitle.length > 0;
+  const hasBody = submission.feedbackBody.length > 0;
+  if (hasTitle !== hasBody || (hasTitle && submission.feedbackTitle.length < 2)) {
+    context.addIssue({ code: "custom", path: ["feedbackTitle"], message: "Shared feedback requires both a title and body." });
+  }
 });
 
 export async function savePilotSettingsAction(
@@ -31,7 +38,8 @@ export async function savePilotSettingsAction(
     rubric: formData.get("rubric"),
     feedbackTitle: formData.get("feedbackTitle"),
     feedbackBody: formData.get("feedbackBody"),
-    release: formData.get("release") === "on",
+    releaseRubric: formData.get("releaseRubric") === "on",
+    releaseFeedback: formData.get("releaseFeedback") === "on",
   });
   if (!submission.success) return { error: submission.error.issues[0]?.message ?? "Review the assignment settings." };
   const settings = pilotSettingsSchema.safeParse({ rubric: submission.data.rubric });
@@ -42,12 +50,13 @@ export async function savePilotSettingsAction(
     rubric_payload: settings.data.rubric,
     feedback_title: submission.data.feedbackTitle,
     feedback_body: submission.data.feedbackBody,
-    release_to_students: submission.data.release,
+    release_rubric_to_students: submission.data.releaseRubric,
+    release_feedback_to_students: submission.data.releaseFeedback,
   });
   if (error) return { error: "The assignment controls could not be saved. No changes were released." };
   revalidatePath("/faculty/cases/[caseId]", "page");
   revalidatePath("/student");
-  return { message: submission.data.release ? "Rubric and shared feedback released to students." : "Draft saved for faculty only." };
+  return { message: "Rubric, feedback, and release controls saved." };
 }
 
 export async function reviewCaseSourceAction(sourceId: string, approve: boolean) {

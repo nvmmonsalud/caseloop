@@ -8,10 +8,14 @@ import { CohortSuppressedState } from "@/components/cohort-suppressed-state";
 import { caseStudy } from "@/lib/data";
 import { getRepresentativeEvidenceCounts } from "@/lib/faculty-analytics";
 import { loadFacultyCohortSummary } from "@/lib/insforge/faculty";
-import { loadFacultyPilotSettings } from "@/lib/insforge/pilot";
+import { loadFacultyPendingSources, loadFacultyPilotSettings } from "@/lib/insforge/pilot";
 
 export default async function Insight() {
-  const [summary, pilotSettings] = await Promise.all([loadFacultyCohortSummary(), loadFacultyPilotSettings()]);
+  const [summary, pilotSettings, pendingSources] = await Promise.all([
+    loadFacultyCohortSummary(),
+    loadFacultyPilotSettings(),
+    loadFacultyPendingSources(),
+  ]);
   if (summary.suppressed) {
     return (
       <>
@@ -20,7 +24,7 @@ export default async function Insight() {
           <div className="eyebrow">Cohort insight · anonymity protected</div>
           <h1 className="serif mt-3 text-4xl leading-tight">Where the room is ready—and where it is brittle.</h1>
           <CohortSuppressedState minimumCohortSize={summary.minimumCohortSize} />
-          <AssignmentSetup initialSettings={pilotSettings} />
+          <AssignmentSetup initialSettings={pilotSettings} initialPendingSources={pendingSources} />
         </main>
       </>
     );
@@ -109,7 +113,7 @@ export default async function Insight() {
             </section>
           </>
         )}
-        <AssignmentSetup initialSettings={pilotSettings} />
+        <AssignmentSetup initialSettings={pilotSettings} initialPendingSources={pendingSources} />
       </main>
     </>
   );

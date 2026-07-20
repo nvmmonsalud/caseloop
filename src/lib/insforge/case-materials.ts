@@ -22,7 +22,7 @@ export async function loadStudentCaseSources(): Promise<CaseSource[]> {
   const { data, error } = await client.database
     .from("case_sources")
     .select("source_key, title, source_type, content")
-    .eq("case_id", "20000000-0000-0000-0000-000000000001")
+    .eq("case_id", "10000000-0000-0000-0000-000000000001")
     .order("source_key", { ascending: true });
   if (error) throw new Error(`Could not load approved case sources: ${error.message}`);
   return z.array(sourceRowSchema).parse(data).map((source) => ({
