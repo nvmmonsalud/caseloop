@@ -81,10 +81,28 @@ Before enabling verification on another origin, add its exact `/login` URL to `a
 npm run lint
 npm run typecheck
 npm test
+npm run test:e2e:install
+npm run test:e2e
 npm run build
 ```
 
-Tests cover exact cohort aggregation and structured AI fallback validation.
+Unit tests cover exact cohort aggregation, authorization boundaries, authentication behavior, and structured AI fallback validation. The deterministic Playwright suite starts isolated demo and authentication-contract servers, uses a local fake InsForge boundary, and requires no credentials or external writes. It covers the student preparation/reflection loop, reload recovery, faculty aggregate/privacy screens, protected routes, verification callbacks, and sanitized login errors.
+
+### Live InsForge E2E
+
+The optional live suite verifies real session cookies, student persistence, role redirects, faculty-only aggregates, privacy, and sign-out. It skips explicitly unless all six variables below are present:
+
+```bash
+export E2E_LIVE_BASE_URL="https://your-non-production-preview.example"
+export E2E_STUDENT_EMAIL="dedicated-student@example.test"
+export E2E_STUDENT_PASSWORD="..."
+export E2E_FACULTY_EMAIL="dedicated-faculty@example.test"
+export E2E_FACULTY_PASSWORD="..."
+export E2E_NON_PRODUCTION_CONFIRM="true"
+npm run test:e2e:live
+```
+
+Use a preview deployment connected to an isolated InsForge backend branch and dedicated test accounts. The student test overwrites that account’s fictional diagnostic. The suite refuses the known CaseFlow production hostname, never creates accounts, and does not reset or query the database out of band. Live traces and videos are disabled so credentials are not retained in Playwright artifacts.
 
 ## Pilot controls and secure case material
 

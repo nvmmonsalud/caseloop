@@ -12,7 +12,11 @@
     "test:watch": "vitest",
     "eval:ai": "tsx scripts/ai-eval.ts --mode=offline --format=markdown",
     "eval:ai:json": "tsx scripts/ai-eval.ts --mode=offline --format=json",
-    "eval:ai:live": "tsx scripts/ai-eval.ts --mode=live --format=markdown"
+    "eval:ai:live": "tsx scripts/ai-eval.ts --mode=live --format=markdown",
+    "test:e2e": "playwright test --project=demo --project=auth-contract",
+    "test:e2e:live": "playwright test --project=live",
+    "test:e2e:headed": "playwright test --project=demo --project=auth-contract --headed",
+    "test:e2e:install": "playwright install chromium"
   },
   "dependencies": {
     "@insforge/sdk": "^1.4.5",
@@ -27,6 +31,7 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@playwright/test": "^1.61.1",
     "@tailwindcss/postcss": "^4",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
