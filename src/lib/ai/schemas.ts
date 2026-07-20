@@ -1,8 +1,80 @@
 import { z } from "zod";
-export const coachSchema=z.object({question:z.string(),challenge:z.string(),sourceIds:z.array(z.string()),inference:z.string()});
-export const briefSchema=z.object({recommendation:z.string(),evidence:z.array(z.object({claim:z.string(),sourceId:z.string()})),assumptions:z.array(z.string()),tradeoffs:z.string(),counterargument:z.string(),openQuestion:z.string(),confidence:z.number().min(0).max(100)});
-export const cohortSchema=z.object({misconceptions:z.array(z.object({title:z.string(),evidence:z.string(),count:z.number()})),overlookedSourceIds:z.array(z.string()),discussionTensions:z.array(z.string())});
-export const planSchema=z.object({openingQuestion:z.string(),segments:z.array(z.object({minutes:z.number(),title:z.string(),prompt:z.string()})),boardPlan:z.array(z.string()),closingSynthesis:z.string()});
-export const reflectionSchema=z.object({positionShift:z.string(),reasoningShift:z.string(),weakenedAssumption:z.string(),newEvidence:z.string()});
-export const schemas={coach:coachSchema,brief:briefSchema,cohort:cohortSchema,plan:planSchema,reflection:reflectionSchema};
-export type AIFeature=keyof typeof schemas;
+
+const conciseText = z.string().trim().min(1).max(2_000);
+export const sourceIdSchema = z.enum(["S1", "S2", "S3", "S4", "S5"]);
+
+export const coachSchema = z.object({
+  question: conciseText.describe("One open Socratic question, not an answer."),
+  challenge: conciseText.describe("A concise competing perspective or evidence challenge."),
+  sourceIds: z
+    .array(sourceIdSchema)
+    .min(1)
+    .max(3)
+    .describe("Only source IDs that directly ground the challenge."),
+  inference: conciseText.describe("An explicit AI inference, not a case fact."),
+});
+
+export const briefSchema = z.object({
+  recommendation: conciseText,
+  evidence: z
+    .array(
+      z.object({
+        claim: conciseText,
+        sourceId: sourceIdSchema,
+      }),
+    )
+    .min(1)
+    .max(6),
+  assumptions: z.array(conciseText).min(1).max(6),
+  tradeoffs: conciseText,
+  counterargument: conciseText,
+  openQuestion: conciseText,
+  confidence: z.number().min(0).max(100),
+});
+
+export const cohortSchema = z.object({
+  misconceptions: z
+    .array(
+      z.object({
+        title: conciseText,
+        evidence: conciseText,
+        count: z.number().int().nonnegative(),
+      }),
+    )
+    .max(12),
+  overlookedSourceIds: z.array(sourceIdSchema).max(5),
+  discussionTensions: z.array(conciseText).max(8),
+});
+
+export const planSchema = z.object({
+  openingQuestion: conciseText,
+  segments: z
+    .array(
+      z.object({
+        minutes: z.number().int().positive().max(90),
+        title: conciseText,
+        prompt: conciseText,
+      }),
+    )
+    .min(1)
+    .max(12),
+  boardPlan: z.array(conciseText).min(1).max(10),
+  closingSynthesis: conciseText,
+});
+
+export const reflectionSchema = z.object({
+  positionShift: conciseText,
+  reasoningShift: conciseText,
+  weakenedAssumption: conciseText,
+  newEvidence: conciseText,
+});
+
+export const schemas = {
+  coach: coachSchema,
+  brief: briefSchema,
+  cohort: cohortSchema,
+  plan: planSchema,
+  reflection: reflectionSchema,
+};
+
+export type AIFeature = keyof typeof schemas;

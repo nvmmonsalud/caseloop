@@ -1,1 +1,17 @@
-export async function postAI<T>(feature:"coach"|"brief"|"cohort"|"plan"|"reflection",input:unknown):Promise<{data:T;mode:"demo"|"live"}>{const response=await fetch(`/api/ai/${feature}`,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({input})});const payload=await response.json();if(!response.ok)throw new Error(payload.error||"The AI service is unavailable.");return payload}
+import type { AIMode } from "./service";
+
+export async function postAI<T>(
+  feature: "coach" | "brief" | "cohort" | "plan" | "reflection",
+  input: unknown,
+): Promise<{ data: T; mode: AIMode }> {
+  const response = await fetch(`/api/ai/${feature}`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ input }),
+  });
+  const payload = await response.json();
+  if (!response.ok) {
+    throw new Error(payload.error || "The AI service is unavailable.");
+  }
+  return payload;
+}

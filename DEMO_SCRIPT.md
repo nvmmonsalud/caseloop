@@ -14,7 +14,7 @@ Switch roles. Show 12 of 24 completed, 74% average confidence, and the recommend
 
 ## 2:15–2:40 — AI architecture and safeguards
 
-Show the architecture diagram. “Five GPT-5.6 workflows use the official Responses API, dedicated server prompts, source IDs, and Zod outputs. Missing keys activate the same-shaped demo fallback. Facts, student assumptions, and AI inference stay distinct. There is no high-stakes grading; faculty control released content.”
+Show the architecture diagram. “Five GPT-5.6 workflows run through Vercel AI Gateway with dedicated server prompts, source IDs, and Zod outputs. Provider, timeout, or schema failures activate the same-shaped validated fallback. Facts, student assumptions, and AI inference stay distinct. There is no high-stakes grading; faculty control released content.”
 
 ## 2:40–3:00 — Impact and vision
 

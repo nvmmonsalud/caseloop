@@ -28,7 +28,7 @@ CaseFlow embeds AI in a learning loop: material → diagnostic → Socratic prep
 ```mermaid
 flowchart LR
   UI[Next.js App Router UI] --> API[Server-only AI routes]
-  API --> R[OpenAI Responses API\nGPT-5.6 and Zod]
+  API --> R[Vercel AI Gateway\nGPT-5.6 and Zod]
   API --> D[Demo fallback]
   UI --> S[(InsForge\nAuth and Postgres)]
   S --> A[Anonymized cohort aggregation]
@@ -52,9 +52,13 @@ Open `http://localhost:3000/demo`. Demo mode needs no external account. Choose *
 
 | Variable | Required | Purpose |
 |---|---:|---|
-| `DEMO_MODE` | No | `true` uses reliable structured fallbacks |
-| `OPENAI_API_KEY` | Live AI only | Server-side OpenAI key |
-| `OPENAI_MODEL` | No | Defaults to `gpt-5.6` |
+| `DEMO_MODE` | No | Live AI is enabled only when explicitly set to `false` |
+| `AI_GATEWAY_MODEL` | No | Defaults to balanced `openai/gpt-5.6-terra`; Sol and Luna remain configurable |
+| `AI_REASONING_EFFORT` | No | Defaults to `medium`; accepts `none`, `low`, `medium`, `high`, or `xhigh` |
+| `AI_REQUEST_TIMEOUT_MS` | No | Total live-generation timeout; defaults to 30 seconds |
+| `AI_MAX_OUTPUT_TOKENS` | No | Structured response budget; defaults to 2,000 |
+| `AI_FALLBACK_ON_ERROR` | No | Defaults to `true`, returning a validated deterministic response after provider or schema failure |
+| `AI_GATEWAY_API_KEY` | Local live AI only | Optional server-only Gateway key; Vercel deployments use OIDC automatically |
 | `NEXT_PUBLIC_PERSISTENCE_ENABLED` | No | `true` enables InsForge accounts and durable student work |
 | `NEXT_PUBLIC_INSFORGE_URL` | Persistence only | InsForge project URL |
 | `NEXT_PUBLIC_INSFORGE_ANON_KEY` | Persistence only | Browser-safe InsForge anon key |
@@ -92,7 +96,7 @@ Faculty analytics are loaded server-side through `get_caseflow_cohort_summary`. 
 
 1. Import this repository; use the Next.js preset and repository root.
 2. Set `DEMO_MODE=true` for credential-free judging.
-3. For live AI, set `DEMO_MODE=false`, `OPENAI_API_KEY`, and `OPENAI_MODEL=gpt-5.6`.
+3. Enable AI Gateway for the Vercel project, set `DEMO_MODE=false`, and optionally select `AI_GATEWAY_MODEL=openai/gpt-5.6-terra` and `AI_REASONING_EFFORT=medium`. Vercel authenticates Gateway requests with OIDC; do not add provider credentials to `NEXT_PUBLIC_*` variables.
 4. To enable durable accounts, add the InsForge variables above and set `NEXT_PUBLIC_PERSISTENCE_ENABLED=true`.
 5. Verify `/demo`, both dashboards, the Hikari workspace, brief, cohort insight, and discussion plan.
 
@@ -106,12 +110,12 @@ Faculty analytics are loaded server-side through `get_caseflow_cohort_summary`. 
 
 ## How Codex and GPT-5.6 were used
 
-Codex was the implementation partner across repository setup, product/data design, UX, implementation, synthetic seeds, failure states, tests, documentation, and verification. Inside the app, GPT-5.6 is configured with `OPENAI_MODEL` and invoked through the official SDK’s Responses API using five separate server-side prompts and Zod structured outputs: Socratic coaching, preparation brief, cohort analysis, discussion planning, and reflection comparison.
+Codex was the implementation partner across repository setup, product/data design, UX, implementation, synthetic seeds, failure states, tests, documentation, and verification. Inside the app, GPT-5.6 is invoked through the Vercel AI SDK and AI Gateway using five separate server-side prompts and Zod structured outputs: Socratic coaching, preparation brief, cohort analysis, discussion planning, and reflection comparison. The default is GPT-5.6 Terra at medium reasoning for an interactive quality/latency balance; model and effort remain environment-driven. The supported Gateway model IDs were verified against the [Vercel GPT-5.6 announcement](https://vercel.com/changelog/gpt-5-6-now-available-on-ai-gateway) and [OpenAI model catalog](https://developers.openai.com/api/docs/models).
 
 ## Known limitations
 
 - Demo-mode progress remains browser-local by design; live persistence uses InsForge.
 - Faculty promotion is an administrator operation; self-service course administration and live file parsing are not included.
-- Demo coaching is deterministic; live mode uses the API.
+- Demo coaching is deterministic; live mode uses AI Gateway and automatically returns the same validated fallback shape when a provider call or structured response fails.
 - RLS is foundational, not a completed production security audit.
 - Analytics represent 12 completed synthetic responses in a fictional 24-student cohort.

@@ -12,7 +12,7 @@ CaseFlow guides a student from an initial recommendation through Socratic pressu
 
 ## How it was built
 
-Next.js 16, React 19, TypeScript, Tailwind CSS, Zod, the official OpenAI SDK and Responses API, plus InsForge PostgreSQL and SSR authentication with owner-scoped RLS. A deterministic synthetic demo preserves the complete journey without credentials.
+Next.js 16, React 19, TypeScript, Tailwind CSS, Zod, Vercel AI SDK and AI Gateway, plus InsForge PostgreSQL and SSR authentication with owner-scoped RLS. A deterministic synthetic demo preserves the complete journey without credentials.
 
 ## How Codex was used
 
@@ -20,7 +20,7 @@ Codex served as product-engineering partner across architecture, UX, seed design
 
 ## How GPT-5.6 is used inside the product
 
-Five narrow server-side contracts power the Socratic coach, preparation brief, cohort analyzer, discussion planner, and reflection comparison. Each uses source identifiers, a dedicated prompt, Zod-validated structured output, and explicit inference/assumption boundaries.
+Five narrow server-side contracts power the Socratic coach, preparation brief, cohort analyzer, discussion planner, and reflection comparison. GPT-5.6 runs through Vercel AI Gateway with an environment-selected model and reasoning effort. Each workflow uses source identifiers, a dedicated prompt, Zod-validated structured output, explicit inference/assumption boundaries, a bounded timeout, and a safe deterministic fallback.
 
 ## Challenges encountered
 

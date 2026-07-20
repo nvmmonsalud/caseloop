@@ -2,13 +2,13 @@
 
 ## System boundaries
 
-The App Router renders role-specific surfaces. Browser state supports the zero-credential demo. Server routes own all OpenAI calls, so API keys and prompts never enter client bundles. Responses are parsed against feature-specific Zod schemas; missing keys use shape-compatible fixtures.
+The App Router renders role-specific surfaces. Browser state supports the zero-credential demo. Server routes own all model calls, so Gateway credentials and prompts never enter client bundles. The Vercel AI SDK routes GPT-5.6 through AI Gateway using deployment OIDC or a local server-only Gateway key. Responses are parsed against feature-specific Zod schemas; demo mode and recoverable live failures use shape-compatible fixtures.
 
 ```mermaid
 sequenceDiagram
   participant Student
   participant Next as Next.js
-  participant AI as GPT-5.6 Responses API
+  participant AI as GPT-5.6 via AI Gateway
   participant DB as InsForge
   Student->>Next: Commit diagnostic and sources
   Next->>AI: Stage prompt and S-number context
@@ -27,7 +27,9 @@ The app retains a strict mode boundary: `NEXT_PUBLIC_PERSISTENCE_ENABLED=false` 
 
 ## AI contracts and failures
 
-Each feature has its own prompt and schema. Shared rules enforce source grounding, assumption/inference separation, concise questioning, anonymity, and no automated grading. The route layer handles missing keys, rate limits, invalid structured output, empty input, unsupported feature, and timeouts.
+Each feature has its own prompt and schema. Shared rules enforce source grounding, assumption/inference separation, concise questioning, anonymity, and no automated grading. Source identifiers are schema-constrained to `[S1]`–`[S5]` and cross-checked against the sources supplied to each request before any live response is returned. The Socratic prompt explicitly forbids choosing an entry mode for the student. The route layer limits request size and handles rate limits, invalid structured output, empty input, unsupported features, timeouts, and budget/provider failures. With `AI_FALLBACK_ON_ERROR=true`, provider and validation errors degrade to the deterministic, schema-validated response and identify the result as `fallback` mode.
+
+`DEMO_MODE=false` is the explicit live-AI switch. `AI_GATEWAY_MODEL`, `AI_REASONING_EFFORT`, the output-token budget, and the 5–60 second timeout are server-side configuration. The production default is `openai/gpt-5.6-terra` at `medium` effort for balanced interactive quality, latency, and cost; `openai/gpt-5.6-sol` can be selected for measured quality-first workloads and `openai/gpt-5.6-luna` for measured high-volume workloads.
 
 ## Future multi-tenancy
 

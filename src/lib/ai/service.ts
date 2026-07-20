@@ -1,16 +1,168 @@
-import OpenAI from "openai"; import { zodTextFormat } from "openai/helpers/zod"; import { prompts } from "./prompts"; import { schemas,type AIFeature } from "./schemas"; import { getDemoFallback } from "./fallbacks";
-export async function runAI(feature:AIFeature,input:unknown){
- if(!process.env.OPENAI_API_KEY||process.env.DEMO_MODE==="true")return {data:getDemoFallback(feature,input),mode:"demo" as const};
- const client=new OpenAI({apiKey:process.env.OPENAI_API_KEY,timeout:20_000,maxRetries:1});
- try{
-  const response=await client.responses.parse({model:process.env.OPENAI_MODEL||"gpt-5.6",input:[{role:"system",content:prompts[feature]},{role:"user",content:JSON.stringify(input)}],text:{format:zodTextFormat(schemas[feature],`caseflow_${feature}`)}});
-  if(!response.output_parsed)throw new Error("Invalid structured output");
-  return {data:response.output_parsed,mode:"live" as const};
- }catch(error){
-  const status=error instanceof OpenAI.APIError?error.status:500;
-  if(status===429)throw new AIServiceError("The coach is busy. Try again in a moment.",429);
-  if(error instanceof Error&&/timeout/i.test(error.message))throw new AIServiceError("The model timed out. Your work is saved; please retry.",504);
-  throw new AIServiceError("AI output could not be validated. Please retry or use demo mode.",502);
- }
+import {
+  APICallError,
+  generateText,
+  NoObjectGeneratedError,
+  Output,
+} from "ai";
+import { z } from "zod";
+import { getAIConfig } from "./config";
+import { getDemoFallback } from "./fallbacks";
+import { prompts } from "./prompts";
+import { schemas, type AIFeature } from "./schemas";
+
+export type AIMode = "demo" | "live" | "fallback";
+
+function sourceIdsFromInput(input: unknown) {
+  if (!input || typeof input !== "object") return new Set<string>();
+  const sources = (input as { caseSources?: unknown }).caseSources;
+  if (!Array.isArray(sources)) return new Set<string>();
+  return new Set(
+    sources.flatMap((source) =>
+      source && typeof source === "object" && typeof source.id === "string"
+        ? [source.id]
+        : [],
+    ),
+  );
 }
-export class AIServiceError extends Error{constructor(message:string,public status:number){super(message)}}
+
+function validateFeatureRules(
+  feature: AIFeature,
+  output: Record<string, unknown>,
+  input: unknown,
+) {
+  const availableSources = sourceIdsFromInput(input);
+  const citedSources =
+    feature === "coach"
+      ? (output.sourceIds as string[])
+      : feature === "brief"
+        ? (output.evidence as Array<{ sourceId: string }>).map(
+            (item) => item.sourceId,
+          )
+        : feature === "cohort"
+          ? (output.overlookedSourceIds as string[])
+          : [];
+
+  if (
+    citedSources.some(
+      (sourceId) =>
+        availableSources.size === 0 || !availableSources.has(sourceId),
+    )
+  ) {
+    throw new AIServiceError(
+      "AI output referenced a source that was not supplied.",
+      502,
+    );
+  }
+
+  if (feature === "plan") {
+    const duration = Number(
+      input && typeof input === "object"
+        ? (input as { duration?: unknown }).duration
+        : 0,
+    );
+    const plannedMinutes = (
+      output.segments as Array<{ minutes: number }>
+    ).reduce((total, segment) => total + segment.minutes, 0);
+    if (duration > 0 && plannedMinutes !== duration) {
+      throw new AIServiceError(
+        "AI output did not match the requested discussion duration.",
+        502,
+      );
+    }
+  }
+}
+
+function fallback(feature: AIFeature, input: unknown, mode: AIMode) {
+  return {
+    data: schemas[feature].parse(getDemoFallback(feature, input)),
+    mode,
+  };
+}
+
+export async function runAI(feature: AIFeature, input: unknown) {
+  const config = getAIConfig();
+  if (!config.live) return fallback(feature, input, "demo");
+
+  try {
+    const schema = schemas[feature] as unknown as z.ZodType<
+      Record<string, unknown>
+    >;
+    const result = await generateText({
+      model: config.model,
+      system: prompts[feature],
+      prompt: JSON.stringify(input),
+      reasoning: config.reasoningEffort,
+      maxOutputTokens: config.maxOutputTokens,
+      maxRetries: 1,
+      timeout: config.timeoutMs,
+      output: Output.object({
+        name: `caseflow_${feature}`,
+        description: `Validated CaseFlow ${feature} response`,
+        schema,
+      }),
+      providerOptions: {
+        gateway: {
+          tags: [`feature:${feature}`, "product:caseloop"],
+        },
+      },
+    });
+
+    const data = schema.parse(result.output);
+    validateFeatureRules(feature, data, input);
+    return { data, mode: "live" as const };
+  } catch (error) {
+    if (config.fallbackOnError) return fallback(feature, input, "fallback");
+    throw mapAIError(error);
+  }
+}
+
+function mapAIError(error: unknown) {
+  if (error instanceof AIServiceError) return error;
+
+  if (APICallError.isInstance(error)) {
+    if (error.statusCode === 429) {
+      return new AIServiceError(
+        "The coach is busy. Try again in a moment.",
+        429,
+      );
+    }
+    if (error.statusCode === 402) {
+      return new AIServiceError(
+        "The live AI budget is temporarily unavailable.",
+        503,
+      );
+    }
+  }
+
+  if (
+    error instanceof Error &&
+    (error.name === "AbortError" || /timeout|timed out/i.test(error.message))
+  ) {
+    return new AIServiceError(
+      "The model timed out. Your work is saved; please retry.",
+      504,
+    );
+  }
+
+  if (NoObjectGeneratedError.isInstance(error)) {
+    return new AIServiceError(
+      "AI output could not be validated. Please retry or use demo mode.",
+      502,
+    );
+  }
+
+  return new AIServiceError(
+    "The live AI service is temporarily unavailable.",
+    502,
+  );
+}
+
+export class AIServiceError extends Error {
+  constructor(
+    message: string,
+    public status: number,
+  ) {
+    super(message);
+    this.name = "AIServiceError";
+  }
+}
