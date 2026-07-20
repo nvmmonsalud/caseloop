@@ -79,6 +79,25 @@ function fallback(feature: AIFeature, input: unknown, mode: AIMode) {
   };
 }
 
+function logGenerationFailure(
+  feature: AIFeature,
+  model: string,
+  error: unknown,
+) {
+  const cause = error instanceof Error ? error.cause : undefined;
+  console.error("CaseFlow AI generation failed", {
+    feature,
+    model,
+    name: error instanceof Error ? error.name : "UnknownError",
+    message: error instanceof Error ? error.message : String(error),
+    statusCode: APICallError.isInstance(error) ? error.statusCode : undefined,
+    cause:
+      cause instanceof Error
+        ? { name: cause.name, message: cause.message }
+        : undefined,
+  });
+}
+
 export async function runAI(feature: AIFeature, input: unknown) {
   const config = getAIConfig();
   if (!config.live) return fallback(feature, input, "demo");
@@ -111,6 +130,7 @@ export async function runAI(feature: AIFeature, input: unknown) {
     validateFeatureRules(feature, data, input);
     return { data, mode: "live" as const };
   } catch (error) {
+    logGenerationFailure(feature, config.model, error);
     if (config.fallbackOnError) return fallback(feature, input, "fallback");
     throw mapAIError(error);
   }
