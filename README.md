@@ -4,6 +4,8 @@ CaseFlow is an AI-native learning workspace for MBA case-method education. It he
 
 > All people, organizations, responses, and figures in the demo are synthetic and fictional.
 
+**Build Week judging route:** Open the [credential-free production demo](https://caseloop-zeta.vercel.app/demo), choose **Student (Maya)** for the preparation journey, then use the role switcher to open **Faculty (Professor Tanaka)** for cohort insight and discussion planning.
+
 ## Problem
 
 Students often arrive with summaries rather than defensible positions. Faculty receive repetitive preparation notes but little visibility into cohort misconceptions, confidence, or productive disagreement. Generic “chat with a PDF” tools can shortcut the reasoning case teaching is meant to develop.
@@ -37,6 +39,19 @@ flowchart LR
 ```
 
 Prompts live in `src/lib/ai/prompts`, validation schemas in `src/lib/ai/schemas.ts`, and model orchestration in `src/lib/ai/service.ts`. Synthetic data live in `src/lib/data.ts`; faculty metrics are derived in `src/lib/analytics.ts`. See [ARCHITECTURE.md](./ARCHITECTURE.md).
+
+## Sample data
+
+The judging route uses the fictional Hikari Foods market-entry case, Maya Chen's synthetic student journey, Professor Emi Tanaka's faculty view, and 12 completed fictional cohort responses. No real student, institution, company, or performance data are included. The complete zero-credential seed is in `src/lib/data.ts`; database seed records are versioned in `migrations/`.
+
+## Major product and architecture decisions
+
+- Preserve independent judgment: the Socratic coach asks before telling and never chooses the student's recommendation.
+- Ground every generated claim: source identifiers are schema-constrained and checked against the supplied case context.
+- Keep roles and publication boundaries explicit: student work is owner-scoped; faculty insights are anonymized, thresholded, editable, and released by a human.
+- Avoid automated high-stakes grading: CaseFlow supports preparation and discussion orchestration, not autonomous assessment.
+- Make judging reliable: the synthetic browser-local demo is complete and credential-free, while live AI and InsForge persistence remain production seams.
+- Fail safely: each AI workflow has its own prompt and Zod contract, with bounded timeouts and shape-compatible deterministic fallbacks.
 
 ## Local setup and demo accounts
 
@@ -143,9 +158,13 @@ Create and test the bucket and migration on an InsForge backend branch before me
 - Faculty edit and control generated teaching content.
 - Production aggregation uses a course-scoped security-definer RPC with a minimum cohort threshold of five.
 
-## How Codex and GPT-5.6 were used
+## How Codex contributed
 
-Codex was the implementation partner across repository setup, product/data design, UX, implementation, synthetic seeds, failure states, tests, documentation, and verification. Inside the app, GPT-5.6 is invoked through the Vercel AI SDK and AI Gateway using five separate server-side prompts and Zod structured outputs: Socratic coaching, preparation brief, cohort analysis, discussion planning, and reflection comparison. The default is GPT-5.6 Terra at medium reasoning for an interactive quality/latency balance; model and effort remain environment-driven. The supported Gateway model IDs were verified against the [Vercel GPT-5.6 announcement](https://vercel.com/changelog/gpt-5-6-now-available-on-ai-gateway) and [OpenAI model catalog](https://developers.openai.com/api/docs/models).
+Codex was the product-engineering partner across repository setup, product and data modeling, interaction design, implementation, synthetic seeds, InsForge persistence and privacy controls, failure states, tests, documentation, and deployment verification. The core build task's `/feedback` Session ID is `019f79be-d29c-7b32-a329-66e70b3e9b03`.
+
+## How GPT-5.6 contributed
+
+Inside the app, GPT-5.6 is invoked through the Vercel AI SDK and AI Gateway using five separate server-side prompts and Zod structured outputs: Socratic coaching, preparation brief, cohort analysis, discussion planning, and reflection comparison. The default is GPT-5.6 Terra at medium reasoning for an interactive quality/latency balance; model and effort remain environment-driven. The supported Gateway model IDs were verified against the [Vercel GPT-5.6 announcement](https://vercel.com/changelog/gpt-5-6-now-available-on-ai-gateway) and [OpenAI model catalog](https://developers.openai.com/api/docs/models).
 
 ## Known limitations
 
@@ -155,3 +174,7 @@ Codex was the implementation partner across repository setup, product/data desig
 - RLS and k-anonymous faculty aggregation are foundational controls, not a completed production security audit.
 - Pilot document screening blocks common active-content and test-malware signatures, but institutional use still requires a managed malware scanner and OCR for image-only PDFs.
 - Analytics represent 12 completed synthetic responses in a fictional 24-student cohort.
+
+## License
+
+CaseFlow is released under the [MIT License](./LICENSE).

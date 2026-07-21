@@ -40,8 +40,19 @@ AI is most useful in education when it changes the learning activity. It should 
 
 ## What comes next
 
-Secure case-material ingestion, faculty-controlled rubrics and releases, LMS integration, institutional controls, and longitudinal reasoning development on top of the new live InsForge persistence layer.
+Managed antivirus scanning and OCR for the existing quarantined PDF/DOCX ingestion flow; institution-managed invitations and MFA; LMS integration; longitudinal reasoning portfolios; accessibility and internationalization work; and institution-level retention, consent, residency, and audit controls.
 
 ## Education-category positioning
 
 CaseFlow can improve evidence coverage and reasoning quality before class while reducing faculty synthesis time. It is a narrow wedge toward an AI-native LMS organized around learning loops rather than content containers.
+
+## Submission metadata
+
+- **Project:** CaseFlow
+- **Tagline:** Think before the room speaks.
+- **Public demo:** https://caseloop-zeta.vercel.app/demo
+- **Public repository:** https://github.com/nvmmonsalud/caseloop
+- **License:** MIT
+- **Track/category:** Education
+- **Built with:** Codex, GPT-5.6, Next.js 16, React 19, TypeScript, Tailwind CSS, Vercel AI SDK, Vercel AI Gateway, Zod, InsForge Postgres/Auth/Storage, Vitest, and Playwright
+- **Codex Session ID:** `019f79be-d29c-7b32-a329-66e70b3e9b03`

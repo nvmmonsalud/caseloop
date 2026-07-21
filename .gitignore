@@ -16,6 +16,8 @@
 /playwright-report/
 /test-results/
 /.next-e2e-*/
+/.next-video-demo/
+/videos/
 
 # next.js
 /.next/
