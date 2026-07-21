@@ -28,8 +28,8 @@
 - [ ] Submitter type selected
 - [ ] Country of residence entered
 - [ ] Every listed teammate has accepted the invitation
-- [ ] Project description refreshed from `DEVPOST.md`
-- [ ] Repository URL and production demo URL verified in the submission
+- [x] Project description refreshed from `DEVPOST.md`
+- [x] Repository URL and production demo URL verified in the Devpost project
 - [ ] Final status changed from **Draft** to **Submitted**
 
 ## Plugin/developer-tool requirement
@@ -44,4 +44,4 @@ Not applicable: CaseFlow is a hosted education product, not a plugin or develope
 - [x] `npm run test:e2e` — 5 browser acceptance tests passed
 - [x] `npm run build`
 - [x] Production `/`, `/demo`, and `/login` return HTTP 200
-- [ ] Public repository reports the MIT license
+- [x] Public repository reports the MIT license
