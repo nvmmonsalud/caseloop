@@ -18,16 +18,16 @@
 - [x] Audio explicitly explains what was built
 - [x] Audio explicitly explains how Codex contributed
 - [x] Audio explicitly explains how GPT-5.6 is used
-- [ ] Public YouTube upload completed
-- [ ] Uploaded YouTube playback checked with audio enabled
-- [ ] YouTube URL pasted into Devpost
+- [ ] Public YouTube upload completed — `https://youtu.be/4Dwh72aaHRc` currently returns private/login-required to signed-out viewers
+- [ ] Uploaded YouTube playback checked with audio enabled as a signed-out viewer
+- [x] YouTube URL pasted into Devpost
 
 ## Devpost fields that require submitter confirmation
 
 - [x] Selected track/category: Education
-- [ ] Submitter type selected
-- [ ] Country of residence entered
-- [ ] Every listed teammate has accepted the invitation
+- [x] Submitter type confirmed: Individual
+- [x] Country of residence confirmed: Japan
+- [x] Teammate invitations: not applicable for an individual submission with one author
 - [x] Project description refreshed from `DEVPOST.md`
 - [x] Repository URL and production demo URL verified in the Devpost project
 - [ ] Final status changed from **Draft** to **Submitted**
