@@ -1,0 +1,51 @@
+name: Bug Report
+description: File a bug report to help us improve CaseFlow
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug!
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: Browser, OS, and mode (demo / live)
+      placeholder: "Chrome 128 on macOS, demo mode"
+    validations:
+      required: true
+  - type: dropdown
+    id: role
+    attributes:
+      label: Role
+      description: Which role were you using?
+      options:
+        - Student
+        - Faculty
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behavior
+      description: Include screenshots if applicable
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to Reproduce
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Console / Network Logs
+      render: shell

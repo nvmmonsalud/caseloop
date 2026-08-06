@@ -6,6 +6,17 @@ CaseFlow is an AI-native learning workspace for MBA case-method education. It he
 
 **Build Week judging route:** Open the [credential-free production demo](https://caseloop-zeta.vercel.app/demo), choose **Student (Maya)** for the preparation journey, then use the role switcher to open **Faculty (Professor Tanaka)** for cohort insight and discussion planning.
 
+<p align="center">
+  <a href="https://github.com/nvmmonsalud/caseloop/actions"><img src="https://github.com/nvmmonsalud/caseloop/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="https://github.com/nvmmonsalud/caseloop/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License"></a>
+  <a href="https://caseloop-zeta.vercel.app/demo"><img src="https://img.shields.io/badge/demo-live-brightgreen.svg" alt="Demo"></a>
+  <a href="CONTRIBUTING.md"><img src="https://img.shields.io/badge/contributions-welcome-brightgreen.svg" alt="Contributions Welcome"></a>
+</p>
+
+## 👋 Welcome Contributors!
+
+We're actively building a community around CaseFlow. Check out our [CONTRIBUTING.md](CONTRIBUTING.md) to get started — we have good first issues, clear standards, and a friendly maintainer. All contributors are acknowledged in [CONTRIBUTORS.md](CONTRIBUTORS.md).
+
 ## Problem
 
 Students often arrive with summaries rather than defensible positions. Faculty receive repetitive preparation notes but little visibility into cohort misconceptions, confidence, or productive disagreement. Generic “chat with a PDF” tools can shortcut the reasoning case teaching is meant to develop.

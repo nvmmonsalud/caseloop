@@ -1,0 +1,54 @@
+name: Case Study Addition
+description: Contribute a fictional case study for CaseFlow's demo data
+labels: [case-study]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for contributing a case study! CaseFlow's demo data is entirely fictional, and new cases help showcase the platform. You'll be credited in the app.
+  - type: input
+    id: company_name
+    attributes:
+      label: Company Name
+      description: Fictional company name
+      placeholder: "Hikari Foods"
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Case Context
+      description: Background, market conditions, key characters
+    validations:
+      required: true
+  - type: textarea
+    id: decision
+    attributes:
+      label: Key Decision
+      description: What strategic decision does the student need to make?
+    validations:
+      required: true
+  - type: textarea
+    id: positions
+    attributes:
+      label: Possible Positions
+      description: 2-3 defensible positions students could take
+  - type: textarea
+    id: data
+    attributes:
+      label: Supporting Data
+      description: Financials, market research, or other evidence students should consider
+  - type: dropdown
+    id: industry
+    attributes:
+      label: Industry
+      options:
+        - Technology
+        - Healthcare
+        - Finance
+        - Consumer Goods
+        - Manufacturing
+        - Education
+        - Other
+    validations:
+      required: true
